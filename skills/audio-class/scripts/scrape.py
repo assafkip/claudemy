@@ -1,9 +1,16 @@
-"""Pull each author's posts in <workspace>/sources.json into <workspace>/raw/<slug>/.
+"""Save what the class is built from into <workspace>/raw/, one markdown file per page.
 
-One markdown file per post, front matter first (author, title, date, url,
-paywalled, words), so every lesson can cite a post that is really on disk.
+Front matter first (author, title, date, url, paywalled, words), so every lesson
+can cite a page that is really on disk and the checker can refuse one that isn't.
 
-Source kinds, picked by the keys on each sources.json entry:
+Two kinds of entry in <workspace>/sources.json:
+- "pages": ["https://...", ...]  -> the web research reading list (the default
+      mode). Each page is fetched once into raw/web/. Pages under min_words are
+      skipped and named, since a thin page can't support a lesson.
+- "authors": [...]  -> only when the learner asked for a specific person's work.
+      One entry per person, with one of the kinds below.
+
+Author kinds, picked by the keys on each entry:
 - "substack": "name.substack.com"  -> the public archive API (all free posts).
 - "site": {"kind": "sitemap", "sitemaps": [...], "url_pattern": "regex",
            "limit": 150, "min_words": 150}
@@ -14,7 +21,7 @@ Source kinds, picked by the keys on each sources.json entry:
       -> any RSS/Atom feed. Uses the feed's full content when present, else
          fetches the page.
 
-Usage: python3 scrape.py <workspace> [name-substring]
+Usage: python3 scrape.py <workspace> [name-substring | web]
 Re-runs skip posts already on disk, so an interrupted run resumes.
 """
 import html, json, re, sys, time, urllib.error, urllib.request
@@ -70,14 +77,31 @@ def urls_on_disk(out):
 
 def write_post(out, person, title, date, url, body, paywalled=False):
     slug = slugify(url.rstrip("/").rsplit("/", 1)[-1])[:80] or "post"
+    if person["name"] == "web":
+        # Web pages come from many sites, and "index" or "guide" repeats across them.
+        slug = slugify(url.split("/")[2].removeprefix("www."))[:40] + "-" + slug
     (out / f"{date}-{slug}.md").write_text(
         f"---\nauthor: {person['name']}\ntitle: {json.dumps(title)}\ndate: {date}\n"
         f"url: {url}\npaywalled: {str(paywalled).lower()}\nwords: {len(body.split())}\n---\n\n{body}\n"
     )
 
 
+def words_in(node):
+    return len(node.get_text(" ", strip=True).split()) if node else 0
+
+
 def page_body(soup):
-    node = soup.select_one("article") or soup.select_one("main")
+    # The first <article> is often a comment, a related-post card or a recipe box
+    # (theperfectloaf.com has 42 of them, the biggest 150 words, inside a 7,700-word
+    # <main>). Take the largest article, unless <main> holds twice as much.
+    article = max(soup.select("article"), key=words_in, default=None)
+    main = soup.select_one("main")
+    node = article if words_in(article) * 2 >= words_in(main) else main
+    if node is None and soup.body is not None:
+        # Plenty of guides and docs pages have neither tag; take the body minus chrome.
+        for junk in soup.body.select("script, style, nav, header, footer, aside, form"):
+            junk.decompose()
+        node = soup.body
     return node.get_text("\n", strip=True) if node else ""
 
 
@@ -195,8 +219,28 @@ def scrape_rss(ws, person, site):
     print(f"{person['name']}: {kept} new from feed")
 
 
+def scrape_pages(ws, urls, min_words=150):
+    out = ws / "raw" / "web"
+    out.mkdir(parents=True, exist_ok=True)
+    have, kept, thin = urls_on_disk(out), 0, []
+    for url in urls:
+        if url in have:
+            continue
+        if save_page(out, {"name": "web"}, url, "", min_words):
+            kept += 1
+        else:
+            thin.append(url)
+        time.sleep(1)
+    print(f"web: {kept} new pages, {len(have)} already on disk")
+    for url in thin:
+        print(f"web: not saved (thin, JS-only or unreachable): {url}")
+
+
 def main(ws, want=""):
-    for person in json.loads((ws / "sources.json").read_text())["authors"]:
+    cfg = json.loads((ws / "sources.json").read_text())
+    if cfg.get("pages") and want in ("", "web"):
+        scrape_pages(ws, cfg["pages"], cfg.get("min_words", 150))
+    for person in cfg.get("authors", []):
         if want not in person["name"].lower():
             continue
         site = person.get("site") or {}

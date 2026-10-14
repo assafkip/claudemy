@@ -1,6 +1,6 @@
 # audio-class
 
-Give Claude a topic. Get back a short audio course built from the people who write best about it, fitted to how you learn, with every lesson tied to something real in your own work.
+Give Claude a topic. It researches it and hands back a broken-down set of 2-minute audio lessons.
 
 ```
 > teach me negotiation
@@ -8,18 +8,19 @@ Give Claude a topic. Get back a short audio course built from the people who wri
 
 ## What you get
 - **About 12 lessons, 2 minutes each.** Two voices talking, not a lecture.
-- **A card per lesson:** the idea in three lines, what changes for you, how many of the authors agree (and who disagrees), and one action in your actual work, drafted before you open it.
-- **A playbook file:** one rule per lesson you act on.
-- **A lesson plan** showing where the experts split, laid out as decisions for you rather than lessons.
+- **A card per lesson:** the idea in three lines, how widely the sources agree (and who disagrees), and one small thing to try, spelled out.
+- **A playbook file:** one rule per lesson.
+- **A lesson plan** showing where good sources split, laid out as decisions rather than lessons.
 
-Every lesson cites a real post. A checker refuses any card that cites a post the skill didn't actually read.
+Every lesson cites a page the class actually read. A checker refuses any card that cites a page that isn't saved in the workspace.
 
 ## How it works
-1. Finds 4 to 8 practitioners who write about the topic (Substack, blogs with a sitemap or RSS) and shows you the shortlist. Add names anytime.
-2. Scrapes their posts into a local workspace.
-3. Reads your current project to learn your real situation, and your Claude settings and notes to learn how you learn.
-4. One agent per author pulls out cited lessons, then one merges them into themes with agreement counts.
-5. Writes the plan, makes **one sample lesson**, and waits for your reaction before making the rest.
+1. Maps the topic into sub-topics, from how it's usually taught.
+2. Searches the web for 20 to 40 pages worth learning from: practitioners, official docs, research summaries, and a few dissenting views. No more than 3 pages from one site.
+3. Reader agents pull cited notes from the pages, then one agent merges them into themes with agreement counts.
+4. Writes the plan, makes **one sample lesson**, and waits for your reaction before making the rest.
+
+Want a class from one person's work instead? Say so: `teach me negotiation from <name>'s writing`. It reads their Substack or blog and builds the class from that.
 
 ## Install
 As a plugin:
@@ -41,7 +42,7 @@ Voices can be changed with `AUDIO_CLASS_VOICE_A` / `AUDIO_CLASS_VOICE_B` (Eleven
 A 12-lesson class runs several reader and writer agents and about 25 minutes of generated audio. Expect a long-running session and some ElevenLabs credits.
 
 ## A note on sources
-Scraped posts stay in your local workspace for your own study. Don't republish them.
+Pages the class reads are saved in your local workspace for your own study. Don't republish them.
 
 ## License
 MIT. Free to use, change and share.

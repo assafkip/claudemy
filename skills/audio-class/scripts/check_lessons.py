@@ -2,8 +2,8 @@
 
 A lesson passes when its script is two-host dialogue of about 2 minutes with
 no banned language, and its card has the standard sections and cites only
-posts that are actually on disk in <workspace>/raw/. A citation to a post we
-never scraped is how invented sources get in, so it is a hard fail.
+pages that are actually on disk in <workspace>/raw/. A citation to a page the
+class never read is how invented sources get in, so it is a hard fail.
 
 Usage: python3 check_lessons.py <workspace> [lesson-folder ...]   (default: all)
 Exit 1 if any lesson fails.
@@ -12,7 +12,7 @@ import re, sys
 from pathlib import Path
 
 CARD_SECTIONS = ["**Listen:**", "The idea, in three lines", "**Impact:**", "**Who says it:**",
-                 "**Try it on:", "**Your action**", "**Rule to keep**", "**Skip**",
+                 "**Try it**", "**Rule to keep**", "**Skip**",
                  "**Go deeper (optional)**"]
 # Demand words land as pressure on many learners (and on PDA profiles as a shutdown trigger).
 DEMAND = re.compile(r"\b(you need to|you must|you should|make sure|you have to|don't forget)\b", re.I)
@@ -55,7 +55,7 @@ def check_card(text, urls):
     cited = [u.rstrip(".,") for u in re.findall(r"https?://[^\s)>\]]+", text)]
     if not cited:
         problems.append("card cites no source")
-    problems += [f"card cites a post that is not in raw/: {u}" for u in cited if u not in urls]
+    problems += [f"card cites a page that is not in raw/: {u}" for u in cited if u not in urls]
     return problems
 
 
