@@ -18,7 +18,7 @@ CARD_SECTIONS = ["**Listen:**", "The idea, in three lines", "**Impact:**", "**Wh
 DEMAND = re.compile(r"\b(you need to|you must|you should|make sure|you have to|don't forget)\b", re.I)
 DASH = re.compile(r"—|–|(?<!<!)--(?!>)")
 TAG = re.compile(r"\[[a-z ]+\]")
-# 280 to 350 words renders at about 1:55 to 2:25. The first test's 371 words ran 2:32.
+# 280 to 350 words renders at about 2:00 to 2:30. Measured: 347 words ran 2:27, 371 ran 2:32.
 WORDS_MIN, WORDS_MAX, TAGS_MAX = 280, 350, 3
 
 
@@ -67,6 +67,10 @@ def check_plan(ws, urls):
     if not plan.exists():
         return 0
     cited = {u.rstrip(".,") for u in re.findall(r"https?://[^\s)>\]]+", plan.read_text())}
+    if not cited:
+        # A plan that names sources without links has nothing this check can test; "ok" read as a pass.
+        print("skip lesson-plan.md (cites no urls, nothing to check)")
+        return 0
     missing = sorted(cited - urls)
     print(f"{'FAIL' if missing else 'ok  '} lesson-plan.md ({len(cited)} urls)")
     for u in missing:

@@ -52,7 +52,8 @@ def main(ws, max_mb):
     zips = zip_audio(ws, out, max_mb * 1024 * 1024)
     n = combine_cards(ws, out)
     for z in zips:
-        print(f"{z}  {z.stat().st_size / 1e6:.1f} MB")
+        # Same unit as the cap (MiB). Printing decimal MB showed 26.0 against a 25 cap for a zip under it.
+        print(f"{z}  {z.stat().st_size / (1024 * 1024):.1f} MB (cap {max_mb} MB)")
     print(f"{n} cards combined in {out / 'cards.md'}" + (" and cards.docx" if shutil.which("pandoc") else ""))
 
 
