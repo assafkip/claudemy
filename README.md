@@ -24,10 +24,10 @@ Every lesson cites a real post. A checker refuses any card that cites a post the
 ## Install
 As a plugin:
 ```
-/plugin marketplace add <path-or-git-url-of-this-repo>
+/plugin marketplace add assafkip/audio-class
 /plugin install audio-class@audio-class
 ```
-Or copy `skills/audio-class/` into `~/.claude/skills/`.
+Or copy `skills/audio-class/` into `~/.claude/skills/`, or download `dist/audio-class.skill`.
 
 ## Needs
 - Claude Code with web search.
@@ -42,3 +42,6 @@ A 12-lesson class runs several reader and writer agents and about 25 minutes of 
 
 ## A note on sources
 Scraped posts stay in your local workspace for your own study. Don't republish them.
+
+## License
+MIT. Free to use, change and share.
