@@ -1,6 +1,7 @@
 ---
 name: claudemy
 description: Turn any topic into a short audio course. Researches the topic on the web, works out what most good sources agree on and where they split, then writes and renders a broken-down set of 2-minute two-host audio lessons, each with a one-screen card and one small thing to try. Can also build the class from one specific person's work when asked. Use this whenever someone wants to learn a skill or subject ("teach me X", "make me a course on X", "I want to learn how to X", "break X down into lessons", "audio lessons on X", "a class on X from someone's writing", "podcast-style lessons"), even if they don't say "audio" or "class".
+license: MIT
 ---
 
 # Claudemy
