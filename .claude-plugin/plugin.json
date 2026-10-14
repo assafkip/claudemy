@@ -1,11 +1,11 @@
 {
-  "name": "audio-class",
+  "name": "claudemy",
   "version": "0.2.0",
   "description": "Turn any topic into a short audio course: researches it on the web, maps where good sources agree, and makes 2-minute two-host audio lessons with one small thing to try in each. Can also build a class from one person's writing.",
   "author": {
     "name": "Assaf Kipnis"
   },
   "license": "MIT",
-  "repository": "https://github.com/assafkip/audio-class",
-  "homepage": "https://github.com/assafkip/audio-class"
+  "repository": "https://github.com/assafkip/claudemy",
+  "homepage": "https://github.com/assafkip/claudemy"
 }

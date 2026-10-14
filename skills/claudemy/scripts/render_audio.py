@@ -8,10 +8,10 @@ Engine:
 - ElevenLabs Text-to-Dialogue when ELEVENLABS_API_KEY is set. One call per
   batch, not isolated lines glued with silence (isolated lines sound robotic).
   Defaults: voices Liam + Jessica (energetic; calm voices read as flat),
-  stability 0.3, model eleven_v3. Override with AUDIO_CLASS_VOICE_A,
-  AUDIO_CLASS_VOICE_B, AUDIO_CLASS_STABILITY.
-- macOS `say` otherwise (free, offline, plainer). Voices AUDIO_CLASS_SAY_A /
-  AUDIO_CLASS_SAY_B, default Samantha and Daniel. Audio tags like [laughs]
+  stability 0.3, model eleven_v3. Override with CLAUDEMY_VOICE_A,
+  CLAUDEMY_VOICE_B, CLAUDEMY_STABILITY.
+- macOS `say` otherwise (free, offline, plainer). Voices CLAUDEMY_SAY_A /
+  CLAUDEMY_SAY_B, default Samantha and Daniel. Audio tags like [laughs]
   are dropped, since `say` would read them aloud.
 Both paths finish with the same warm EQ and loudness pass in ffmpeg.
 
@@ -50,9 +50,9 @@ def batches(turns):
 
 
 def elevenlabs_parts(turns, tmp, key):
-    voices = {"A": os.environ.get("AUDIO_CLASS_VOICE_A", "TX3LPaxmHKxFdv7VOQHJ"),
-              "B": os.environ.get("AUDIO_CLASS_VOICE_B", "cgSgspJ2msm6clMCkdW9")}
-    stability = float(os.environ.get("AUDIO_CLASS_STABILITY", "0.3"))
+    voices = {"A": os.environ.get("CLAUDEMY_VOICE_A", "TX3LPaxmHKxFdv7VOQHJ"),
+              "B": os.environ.get("CLAUDEMY_VOICE_B", "cgSgspJ2msm6clMCkdW9")}
+    stability = float(os.environ.get("CLAUDEMY_STABILITY", "0.3"))
     parts = []
     for i, batch in enumerate(batches(turns)):
         body = {"inputs": [{"text": said, "voice_id": voices[who]} for who, said in batch],
@@ -68,8 +68,8 @@ def elevenlabs_parts(turns, tmp, key):
 
 
 def say_parts(turns, tmp):
-    voices = {"A": os.environ.get("AUDIO_CLASS_SAY_A", "Samantha"),
-              "B": os.environ.get("AUDIO_CLASS_SAY_B", "Daniel")}
+    voices = {"A": os.environ.get("CLAUDEMY_SAY_A", "Samantha"),
+              "B": os.environ.get("CLAUDEMY_SAY_B", "Daniel")}
     parts = []
     for i, (who, said) in enumerate(turns):
         part = tmp / f"turn{i:03d}.aiff"

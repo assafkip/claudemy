@@ -1,6 +1,6 @@
-# audio-class
+# Claudemy
 
-Give Claude a topic. It researches it and hands back a broken-down set of 2-minute audio lessons.
+An open alternative to Udemy and Coursera. Give Claude a topic. It researches it and hands back a broken-down set of 2-minute audio lessons.
 
 ```
 > teach me negotiation
@@ -25,10 +25,10 @@ Want a class from one person's work instead? Say so: `teach me negotiation from 
 ## Install
 As a plugin:
 ```
-/plugin marketplace add assafkip/audio-class
-/plugin install audio-class@audio-class
+/plugin marketplace add assafkip/claudemy
+/plugin install claudemy@claudemy
 ```
-Or copy `skills/audio-class/` into `~/.claude/skills/`, or download `dist/audio-class.skill`.
+Or copy `skills/claudemy/` into `~/.claude/skills/`, or download `dist/claudemy.skill`.
 
 ## Needs
 - Claude Code with web search.
@@ -36,7 +36,7 @@ Or copy `skills/audio-class/` into `~/.claude/skills/`, or download `dist/audio-
 - Audio: an ElevenLabs API key in `ELEVENLABS_API_KEY` for natural two-voice lessons. Without one, macOS's built-in voices are used (free, plainer).
 - Optional: `pandoc` for a Word copy of the cards.
 
-Voices can be changed with `AUDIO_CLASS_VOICE_A` / `AUDIO_CLASS_VOICE_B` (ElevenLabs voice ids) or `AUDIO_CLASS_SAY_A` / `AUDIO_CLASS_SAY_B` (macOS voices).
+Voices can be changed with `CLAUDEMY_VOICE_A` / `CLAUDEMY_VOICE_B` (ElevenLabs voice ids) or `CLAUDEMY_SAY_A` / `CLAUDEMY_SAY_B` (macOS voices).
 
 ## Cost and time
 A 12-lesson class runs several reader and writer agents and about 25 minutes of generated audio. Expect a long-running session and some ElevenLabs credits.

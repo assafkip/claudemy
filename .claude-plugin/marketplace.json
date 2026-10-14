@@ -1,11 +1,11 @@
 {
-  "name": "audio-class",
+  "name": "claudemy",
   "owner": {
     "name": "Assaf Kipnis"
   },
   "plugins": [
     {
-      "name": "audio-class",
+      "name": "claudemy",
       "source": "./",
       "description": "Turn any topic into a researched course of 2-minute audio lessons."
     }

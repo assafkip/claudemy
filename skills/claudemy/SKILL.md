@@ -1,9 +1,9 @@
 ---
-name: audio-class
+name: claudemy
 description: Turn any topic into a short audio course. Researches the topic on the web, works out what most good sources agree on and where they split, then writes and renders a broken-down set of 2-minute two-host audio lessons, each with a one-screen card and one small thing to try. Can also build the class from one specific person's work when asked. Use this whenever someone wants to learn a skill or subject ("teach me X", "make me a course on X", "I want to learn how to X", "break X down into lessons", "audio lessons on X", "a class on X from someone's writing", "podcast-style lessons"), even if they don't say "audio" or "class".
 ---
 
-# Audio class
+# Claudemy
 
 Give it a topic; it researches it and hands back a course someone will actually finish. Each lesson is about 2 minutes of two voices talking, plus a card with the idea in three lines and one small thing to try. Every claim traces back to a page the class really read, and every lesson says how widely the sources agree.
 
@@ -18,7 +18,7 @@ Why this shape: short audio gets heard, one small practice gets done, a rule wri
 The class is general. It does not read the user's project files, notes or settings, and lessons don't assume anything about the learner beyond what they said in the request.
 
 ## Workspace
-Everything for one class lives in `./audio-class/<topic-slug>/` under the current directory:
+Everything for one class lives in `./claudemy/<topic-slug>/` under the current directory:
 ```
 sources.json         the reading list (and the person, if one was asked for)
 raw/web/             each researched page, one markdown file, front matter with url
