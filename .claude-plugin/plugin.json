@@ -1,11 +1,21 @@
 {
   "name": "claudemy",
   "version": "0.2.0",
-  "description": "Turn any topic into a short audio course: researches it on the web, maps where good sources agree, and makes 2-minute two-host audio lessons with one small thing to try in each. Can also build a class from one person's writing.",
+  "description": "An open-source alternative to Udemy and Coursera: give Claude a topic, it researches the web and builds a course of 2-minute two-host audio lessons with cited sources and one small practice each.",
   "author": {
     "name": "Assaf Kipnis"
   },
   "license": "MIT",
   "repository": "https://github.com/assafkip/claudemy",
-  "homepage": "https://github.com/assafkip/claudemy"
+  "homepage": "https://github.com/assafkip/claudemy",
+  "keywords": [
+    "udemy-alternative",
+    "coursera-alternative",
+    "course-generator",
+    "learning",
+    "audio-lessons",
+    "microlearning",
+    "podcast",
+    "elevenlabs"
+  ]
 }
