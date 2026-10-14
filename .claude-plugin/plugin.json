@@ -1,0 +1,6 @@
+{
+  "name": "audio-class",
+  "version": "0.1.0",
+  "description": "Turn any topic into a personal audio course: finds expert writers, scrapes their posts, maps where they agree, and makes 2-minute two-host audio lessons with one real action each.",
+  "author": { "name": "Assaf Kipnis" }
+}

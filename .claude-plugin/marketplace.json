@@ -1,0 +1,11 @@
+{
+  "name": "audio-class",
+  "owner": { "name": "Assaf Kipnis" },
+  "plugins": [
+    {
+      "name": "audio-class",
+      "source": "./",
+      "description": "Turn any topic into a personal audio course built from expert writers, with one real action per lesson."
+    }
+  ]
+}
