@@ -10,17 +10,17 @@ Give this to each writer agent with its lesson numbers. Lesson 1, once the user 
 
 ## script.txt
 - Two hosts, one turn per line: `A: ...` or `B: ...`. Nothing else on any line.
-- 300 to 380 words (about 2 minutes of audio).
+- 280 to 350 words (about 2 minutes of audio; the checker enforces this band).
 - Write the way people talk: contractions, short turns, reactions ("right?", "oof", "exactly"), numbers written the way they're said. Energetic, warm, never a lecture.
 - At most 3 audio tags, only `[laughs]`, `[chuckles]`, `[sighs]`, at the start of a turn.
 - Shape: hook, the idea, how widely sources agree (and who pushes back), one real story or number from a page, a concrete example of it in use, then the small thing to try, then one line to close on what changes.
 - Speak to "you", the listener. Assume nothing about them beyond the level in `sources.json`.
-- No emdashes, no double hyphens. Skip demand words (need to, must, should, have to, make sure): the listener chooses, the lesson offers.
+- No emdashes, no double hyphens. Skip demand words aimed at the listener (you need to, you must, you should, you have to, make sure): the listener chooses, the lesson offers. Describing a situation is fine ("both sides have to say yes").
 
 ## card.md
 Sections in this order (the checker looks for them):
 - `# Lesson N. <Handle>` (a 2 to 3 word name; named ideas stick)
-- `**Listen:** <slug>.mp3 (2 min)`
+- `**Listen:** <slug>.mp3 (2 min)` (the render replaces the time with the real one)
 - `**The idea, in three lines**` then three bullets
 - `**Impact:**` one line: what gets better once you do this
 - `**Who says it:**` N of M sources agree, plus who disagrees and how, in one line

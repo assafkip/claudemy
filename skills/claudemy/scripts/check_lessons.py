@@ -18,7 +18,8 @@ CARD_SECTIONS = ["**Listen:**", "The idea, in three lines", "**Impact:**", "**Wh
 DEMAND = re.compile(r"\b(you need to|you must|you should|make sure|you have to|don't forget)\b", re.I)
 DASH = re.compile(r"—|–|(?<!<!)--(?!>)")
 TAG = re.compile(r"\[[a-z ]+\]")
-WORDS_MIN, WORDS_MAX, TAGS_MAX = 280, 420, 3
+# 280 to 350 words renders at about 1:55 to 2:25. The first test's 371 words ran 2:32.
+WORDS_MIN, WORDS_MAX, TAGS_MAX = 280, 350, 3
 
 
 def scraped_urls(ws):
@@ -59,8 +60,23 @@ def check_card(text, urls):
     return problems
 
 
+def check_plan(ws, urls):
+    """The plan cites pages too. In the first full test, checking it by hand caught
+    3 stories credited to the wrong page; a url not on disk is the part a script can catch."""
+    plan = ws / "class" / "lesson-plan.md"
+    if not plan.exists():
+        return 0
+    cited = {u.rstrip(".,") for u in re.findall(r"https?://[^\s)>\]]+", plan.read_text())}
+    missing = sorted(cited - urls)
+    print(f"{'FAIL' if missing else 'ok  '} lesson-plan.md ({len(cited)} urls)")
+    for u in missing:
+        print(f"     plan cites a page that is not in raw/: {u}")
+    return bool(missing)
+
+
 def main(ws, folders):
-    urls, failed = scraped_urls(ws), 0
+    urls = scraped_urls(ws)
+    failed = check_plan(ws, urls)
     for d in folders:
         script, card = d / "script.txt", d / "card.md"
         if not (script.exists() and card.exists()):

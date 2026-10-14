@@ -37,6 +37,8 @@ Check what's available and say what's missing in one line: `python3`, the `beaut
 ## Step 1. Map the topic
 Write `research/topics.md`: 12 to 18 sub-topic ids (T01 to T18) that together cover what a learner at this level gets from a good course. Search first to see how the topic is usually taught; don't guess the syllabus from memory. Every reader files notes under these ids, so sources can be compared.
 
+If WebSearch is unavailable or blocked, use whatever search the session has (another search tool, an MCP, fetching a search engine's results page), and say which. Known good sites' sitemaps (`/sitemap.xml`) are a reliable way to find real pages on a sub-topic.
+
 ## Step 2. Build the reading list
 Search the web, several queries per sub-topic, for 20 to 40 pages worth learning from. Prefer a mix:
 - People who do the work and write concretely about it.
@@ -47,7 +49,9 @@ Skip content farms, listicles with no substance, pages behind a login, and anyth
 ```json
 {"topic": "...", "level": "beginner", "pages": ["https://...", "https://..."]}
 ```
-Then fetch them: `python3 <skill>/scripts/scrape.py <workspace> web`. It reports pages it couldn't save (thin, JavaScript-only, unreachable). Replace those from the same sub-topic if coverage gets thin, and re-run; it skips what's on disk.
+Only list urls you saw in real search results or on a page you opened. Search models invent plausible urls: in the first full test, 12 of 34 suggested urls were dead.
+
+Then fetch them: `python3 <skill>/scripts/scrape.py <workspace> web`. It names every page it didn't save and why: an HTTP error (usually a wrong url), a paywalled teaser, or a thin or JavaScript-only page. While fewer than 20 pages are saved, or any sub-topic you plan to teach has fewer than 2 pages, search again for replacements and re-run; it skips what's on disk.
 
 Show the user a short line on what's being read (how many pages, the main kinds of source). Don't wait for approval.
 
@@ -63,15 +67,10 @@ When the user names someone, find where that person publishes (Substack, an own-
 Run `python3 <skill>/scripts/scrape.py <workspace> <name>` in the background (Substack is slow on purpose; it rate-limits). If their archive can't be read (paywalled, JavaScript-only, too few posts), say so plainly and offer research mode instead. Lessons then say "she says" rather than "most sources agree", and the agreement map becomes a map of the person's own ideas and where they changed their mind.
 
 ## Step 3. Read
-Reader agents in parallel, each with `references/reader-brief.md` and about 8 pages (or one person's whole archive, split by date if it's large). They write `research/notes/<batch>.md`.
+Reader agents in parallel, each with `references/reader-brief.md`, a batch name (`a`, `b`, `c`...) and an explicit list of about 8 file paths (or one person's whole archive, split by date if it's large). They write `research/notes/<batch>.md`.
 
 ## Step 4. Agreement map
-One agent clusters every note into 30 to 45 themes, one teachable idea each, written as an instruction ("Anchor with a specific number, not a round one", not "anchoring"). For each theme:
-- Agree: N of M sources, with note ids and urls.
-- Disagree: which sources teach the opposite, their claim in one line.
-- Level: foundation, core or advanced.
-
-Two themes that point opposite ways stay separate, with the disagreement recorded. The map ends with "The big splits" and "Coverage gaps". Every url is kept exactly as it is in the inputs. Output: `research/agreement-map.md`.
+One agent with `references/map-brief.md` clusters every note into 30 to 45 themes, each with an agreement count, the disagreements, and a level. Output: `research/agreement-map.md`.
 
 ## Step 5. The lesson plan
 Write `class/lesson-plan.md` yourself; this is the judgment step.
@@ -82,13 +81,13 @@ Write `class/lesson-plan.md` yourself; this is the judgment step.
 - Then "Splits": where good sources disagree, the sides, and how a learner could decide. These are decisions, not lessons.
 - Then coverage gaps and how the class is delivered.
 
-Check every claim in the plan against the agreement map before showing it.
+Check every claim in the plan against the agreement map before showing it: each story and number goes back to the note it came from, and the note to its page. `check_lessons.py` also fails the plan if it cites a url that isn't on disk.
 
 ## Step 6. One sample lesson first
 Write lesson 1 with `references/writer-brief.md` (use `references/lesson-example.md` as the shape), check it, render it, and send the audio and card. Then wait for the user's reaction before making the rest. Fixing the format on one lesson is cheap; fixing it on twelve is not. Their feedback becomes the shape every later lesson copies, so record it in the writer brief you pass on.
 
 Check: `python3 <skill>/scripts/check_lessons.py <workspace> <workspace>/class/01-<handle>`
-Render: `python3 <skill>/scripts/render_audio.py <lesson>/script.txt <lesson>/<handle>.mp3`
+Render: `python3 <skill>/scripts/render_audio.py <lesson>/script.txt <lesson>/<handle>.mp3` (it writes the real running time onto the card's Listen line)
 
 ## Step 7. The rest
 - Writer agents in parallel, about 4 lessons each, each told to copy the approved lesson 1.

@@ -138,18 +138,35 @@ def sitemap_entries(site):
     return sorted(entries, reverse=True)
 
 
-def save_page(out, person, url, fallback_date, min_words):
-    """Fetch one page and write it if it carries enough words. True if written."""
+PAYWALL = re.compile(r'"isAccessibleForFree"\s*:\s*"?false|subscribe to (continue|read)|to continue reading|'
+                     r'already a subscriber|sign in to (read|continue)|unlock this article|for subscribers only', re.I)
+
+
+def save_page(out, person, url, fallback_date, min_words, reasons=None):
+    """Fetch one page and write it if it carries enough words. True if written.
+    When reasons is a dict, a page that is not written gets its reason there."""
+    def skip(why):
+        if reasons is not None:
+            reasons[url] = why
+        return False
     try:
-        soup = BeautifulSoup(fetch(url), "html.parser")
+        raw = fetch(url)
+    except urllib.error.HTTPError as e:
+        # A 404 here usually means a search tool invented the url; say so, don't call it thin.
+        return skip(f"HTTP {e.code}, the url is wrong or the site refuses scripts")
     except NETWORK_ERRORS as e:
         # A dropped connection costs one post, not the run; the next run retries it.
         print(f"skipped {url}: {e}", file=sys.stderr)
         time.sleep(10)
-        return False
+        return skip(f"unreachable ({e})")
+    soup = BeautifulSoup(raw, "html.parser")
     body = page_body(soup)
-    if len(body.split()) < min_words:
-        return False
+    words = len(body.split())
+    # A paywall teaser clears a word floor on share buttons alone (HBR teasers ran 179 to 274).
+    if words < 600 and PAYWALL.search(raw):
+        return skip(f"paywalled teaser ({words} words)")
+    if words < min_words:
+        return skip(f"thin or JavaScript-only ({words} words)")
     meta = soup.find("meta", property="article:published_time")
     h1 = soup.find("h1")
     date = (meta["content"] if meta else fallback_date or "undated")[:10]
@@ -222,18 +239,15 @@ def scrape_rss(ws, person, site):
 def scrape_pages(ws, urls, min_words=150):
     out = ws / "raw" / "web"
     out.mkdir(parents=True, exist_ok=True)
-    have, kept, thin = urls_on_disk(out), 0, []
+    have, kept, reasons = urls_on_disk(out), 0, {}
     for url in urls:
         if url in have:
             continue
-        if save_page(out, {"name": "web"}, url, "", min_words):
-            kept += 1
-        else:
-            thin.append(url)
+        kept += save_page(out, {"name": "web"}, url, "", min_words, reasons)
         time.sleep(1)
-    print(f"web: {kept} new pages, {len(have)} already on disk")
-    for url in thin:
-        print(f"web: not saved (thin, JS-only or unreachable): {url}")
+    print(f"web: {kept} new pages saved, {len(have)} already on disk, {kept + len(have)} in total")
+    for url, why in reasons.items():
+        print(f"web: not saved, {why}: {url}")
 
 
 def main(ws, want=""):

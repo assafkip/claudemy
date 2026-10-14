@@ -96,7 +96,20 @@ def main(script_path, out_path):
         tmp = Path(tmp)
         parts = elevenlabs_parts(turns, tmp, key) if key else say_parts(turns, tmp)
         stitch(parts, tmp, out_path)
-    print(f"wrote {out_path} from {len(turns)} turns via {'ElevenLabs' if key else 'macOS say'}")
+    length = stamp_card(Path(script_path).with_name("card.md"), out_path)
+    print(f"wrote {out_path} ({length}) from {len(turns)} turns via {'ElevenLabs' if key else 'macOS say'}")
+
+
+def stamp_card(card, mp3):
+    """Write the real running time onto the card's Listen line. A hand-typed
+    "(2 min)" sat on a 2:32 lesson in the first full test run."""
+    secs = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                 str(mp3)], capture_output=True, text=True, check=True).stdout.strip())
+    length = f"{int(secs // 60)}:{int(secs % 60):02d}"
+    if card.exists():
+        text = card.read_text()
+        card.write_text(re.sub(r"^(\*\*Listen:\*\*.*?)\s*\([^)]*\)\s*$", rf"\1 ({length})", text, count=1, flags=re.M))
+    return length
 
 
 if __name__ == "__main__":
