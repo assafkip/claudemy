@@ -1,40 +1,59 @@
 # Claudemy: an open-source alternative to Udemy and Coursera
 
-![Claudemy: any topic, researched into 2-minute audio lessons](.github/social-preview.png)
+You wanted to learn negotiation. You got a 40-hour course, a syllabus someone wrote years ago, and a tab you never reopened.
 
-**Claudemy is a free Claude Code skill that turns any topic into a short audio course.** You type what you want to learn. Claude researches it on the web, works out what good sources agree on, and builds a set of 2-minute lessons: two voices talking, a one-screen card, and one small thing to try. Every lesson links to the pages it came from.
+Claudemy is a free Claude Code skill that builds the course you will actually finish. You name a topic. It researches the web and hands back about 12 audio lessons of 2 minutes each.
 
 ```
 > teach me negotiation
 ```
 
-No catalog, no subscription, no 40-hour video course. Learn exactly the topic you need, at your level, in lessons short enough to finish.
+https://github.com/user-attachments/assets/f6cbf3b5-9a8f-449b-8489-e1a4e4b810d7
+
+## What lesson 1 looks like
+
+The demo above is a real negotiation course. Lesson 1 is "Your Walk-Away", 2:27 of two hosts talking. The card next to it gives you:
+
+- **The idea in three lines.** Decide what you will do if the ask fails, before you ask.
+- **How many sources agree**, and who does not.
+- **One small thing to try**, with the time it takes.
+- **Links to the pages it came from.**
+
+Listen for 2 minutes. Try one thing. Keep one rule.
 
 ## What you get
+
 - **About 12 audio lessons, 2 minutes each.** Two hosts talking, not a lecture. MP3 files you can play anywhere.
-- **A card per lesson:** the idea in three lines, how many sources agree (and who disagrees), one small practice, and links to go deeper.
-- **A playbook:** one rule per lesson, collected in one file you keep.
-- **A lesson plan** that shows where the experts split, laid out as decisions rather than lessons.
-- **Real citations.** A checker refuses any lesson that cites a page the research didn't actually read.
+- **A card per lesson.** Three-line idea, source agreement, one practice, links to go deeper.
+- **A playbook.** One rule per lesson, collected in one file you keep.
+- **A lesson plan that shows where the experts split.** Laid out as decisions, not lessons.
+- **Real citations.** A checker refuses any lesson that cites a page the research did not actually read.
 
 ## How it works
-1. **Maps the topic** into sub-topics, from how it's usually taught.
-2. **Researches the web:** 20 to 40 pages from practitioners, official docs, research summaries and a few dissenting views. No more than 3 pages from one site, so no single voice dominates.
-3. **Reads and compares:** reader agents pull cited notes, then one agent merges them into themes with agreement counts.
+
+1. **Maps the topic** into sub-topics, based on how it is usually taught.
+2. **Researches the web.** 20 to 40 pages from practitioners, official docs, research summaries and a few dissenting views. No more than 3 pages from one site, so no single voice dominates.
+3. **Reads and compares.** Reader agents pull cited notes. One agent merges them into themes with agreement counts.
 4. **Plans the course** in arcs of about 4 lessons, foundations first.
-5. **Makes one sample lesson** and waits for your reaction, then writes and records the rest.
+5. **Makes one sample lesson** and waits for your reaction. Then it writes and records the rest.
 
 Want a class built from one person's work instead? Say so: `teach me negotiation from <name>'s writing`. It reads their Substack or blog and builds the class from that.
 
 ## Install
+
 As a Claude Code plugin:
+
 ```
 /plugin marketplace add assafkip/claudemy
 /plugin install claudemy@claudemy
 ```
+
 Or copy `skills/claudemy/` into `~/.claude/skills/`, or download [`dist/claudemy.skill`](dist/claudemy.skill).
 
+Then ask for any topic: `teach me <topic>`.
+
 ## Needs
+
 - [Claude Code](https://claude.com/claude-code) with web search.
 - Python 3 with `beautifulsoup4` (`pip install beautifulsoup4`), and `ffmpeg`.
 - Audio: an ElevenLabs API key in `ELEVENLABS_API_KEY` for natural two-voice lessons. Without one, macOS's built-in voices are used (free, plainer).
@@ -51,7 +70,7 @@ Yes. The skill is MIT licensed. You pay only for what you already use: your Clau
 Course sites sell a fixed course someone recorded once. Claudemy builds a course on the topic you name, at your level, from current sources, and shows you where those sources disagree. Lessons are 2 minutes and end in one thing to try, so the course is built to be finished.
 
 **What topics does it work for?**
-Anything people write about well on the open web: skills (negotiation, public speaking, sourdough), professional topics (pricing, hiring, SQL), and subjects (stoicism, music theory). Health, legal and financial topics get a note where advice depends on your situation.
+Anything people write about well on the open web. Skills (negotiation, public speaking, sourdough), professional topics (pricing, hiring, SQL), and subjects (stoicism, music theory). Health, legal and financial topics get a note where advice depends on your situation.
 
 **Does it copy other people's content?**
 No. It reads pages the way a researcher does, writes its own lessons, and links to the sources. Pages it reads are saved only in your local workspace for your own study.
@@ -66,7 +85,9 @@ A 12-lesson course is a long-running Claude Code session: research, reading, wri
 Yes. Name them in the request. Claudemy finds their Substack or blog and builds the course from their writing.
 
 ## Who built it
+
 Built by Assaf Kipnis. More of my work: [askconsulting.io](https://askconsulting.io)
 
 ## License
+
 MIT. Free to use, change and share.
