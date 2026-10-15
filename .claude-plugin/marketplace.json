@@ -1,7 +1,8 @@
 {
   "name": "claudemy",
   "owner": {
-    "name": "Assaf Kipnis"
+    "name": "Assaf Kipnis",
+    "url": "https://askconsulting.io"
   },
   "plugins": [
     {
