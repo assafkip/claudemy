@@ -65,5 +65,8 @@ A 12-lesson course is a long-running Claude Code session: research, reading, wri
 **Can I learn from one specific expert?**
 Yes. Name them in the request. Claudemy finds their Substack or blog and builds the course from their writing.
 
+## Who built it
+Built by Assaf Kipnis. More of my work: [askconsulting.io](https://askconsulting.io)
+
 ## License
 MIT. Free to use, change and share.

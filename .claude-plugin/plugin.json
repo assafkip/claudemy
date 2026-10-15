@@ -3,7 +3,8 @@
   "version": "0.2.0",
   "description": "An open-source alternative to Udemy and Coursera: give Claude a topic, it researches the web and builds a course of 2-minute two-host audio lessons with cited sources and one small practice each.",
   "author": {
-    "name": "Assaf Kipnis"
+    "name": "Assaf Kipnis",
+    "url": "https://askconsulting.io"
   },
   "license": "MIT",
   "repository": "https://github.com/assafkip/claudemy",
