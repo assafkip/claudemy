@@ -22,9 +22,34 @@ TAG = re.compile(r"\[[a-z ]+\]")
 WORDS_MIN, WORDS_MAX, TAGS_MAX = 280, 350, 3
 
 
+# Balanced parentheses stay in the url (Wikipedia's Mercury_(planet)); a lone ")" ends
+# it, as in a markdown link. Backticks, brackets and angle brackets wrap urls, never end them.
+URL = re.compile(r"https?://(?:[^\s()<>\[\]`]|\([^\s()<>]*\))+")
+# Bold, code spans and sentence ends trail urls in markdown; none of that is part of the url.
+TRAILING = ".,;:!?*_'\"`"
+
+
+def cited_urls(text):
+    return [u.rstrip(TRAILING) for u in URL.findall(text)]
+
+
+def same_page(url):
+    """One key per page: scheme, www., #fragment and a trailing slash don't change
+    the page. Exact matching failed valid citations and sent the writer round the
+    fix loop up to three times for nothing. Trailing marks come off both sides,
+    so a url that really ends in "_" or "!" still matches itself."""
+    url = url.rstrip(TRAILING)
+    m = re.match(r"https?://([^/?#]+)([^#]*)", url, re.I)
+    if not m:
+        return url
+    path, q, query = m.group(2).partition("?")
+    return m.group(1).lower().removeprefix("www.") + path.rstrip("/") + q + query
+
+
 def scraped_urls(ws):
+    # scrape.py writes UTF-8; reading in the locale's encoding crashed on Windows-style locales.
     return {line[5:].strip() for f in ws.glob("raw/*/*.md")
-            for line in f.read_text().splitlines()[:12] if line.startswith("url: ")}
+            for line in f.read_text(encoding="utf-8", errors="replace").splitlines()[:12] if line.startswith("url: ")}
 
 
 def banned(text):
@@ -56,10 +81,11 @@ def check_card(text, urls):
     body = re.sub(r"<!--.*?-->", "", text, flags=re.S)
     problems = [f"card missing {s!r}" for s in CARD_SECTIONS if s not in body]
     problems += [f"card: {m}" for m in banned(body)]
-    cited = [u.rstrip(".,") for u in re.findall(r"https?://[^\s)>\]]+", body)]
+    cited = cited_urls(body)
     if not cited:
         problems.append("card cites no source")
-    problems += [f"card cites a page that is not in raw/: {u}" for u in cited if u not in urls]
+    known = {same_page(u) for u in urls}
+    problems += [f"card cites a page that is not in raw/: {u}" for u in cited if same_page(u) not in known]
     return problems
 
 
@@ -69,12 +95,13 @@ def check_plan(ws, urls):
     plan = ws / "class" / "lesson-plan.md"
     if not plan.exists():
         return 0
-    cited = {u.rstrip(".,") for u in re.findall(r"https?://[^\s)>\]]+", plan.read_text())}
+    cited = set(cited_urls(plan.read_text(encoding="utf-8")))
     if not cited:
         # A plan that names sources without links has nothing this check can test; "ok" read as a pass.
         print("skip lesson-plan.md (cites no urls, nothing to check)")
         return 0
-    missing = sorted(cited - urls)
+    known = {same_page(u) for u in urls}
+    missing = sorted(u for u in cited if same_page(u) not in known)
     print(f"{'FAIL' if missing else 'ok  '} lesson-plan.md ({len(cited)} urls)")
     for u in missing:
         print(f"     plan cites a page that is not in raw/: {u}")
@@ -82,6 +109,8 @@ def check_plan(ws, urls):
 
 
 def main(ws, folders):
+    # A url or name the console can't show must not crash the report.
+    sys.stdout.reconfigure(errors="replace")
     urls = scraped_urls(ws)
     failed = check_plan(ws, urls)
     for d in folders:
@@ -90,8 +119,8 @@ def main(ws, folders):
             print(f"FAIL {d.name}: missing script.txt or card.md")
             failed += 1
             continue
-        problems, words = check_script(script.read_text())
-        problems += check_card(card.read_text(), urls)
+        problems, words = check_script(script.read_text(encoding="utf-8"))
+        problems += check_card(card.read_text(encoding="utf-8"), urls)
         print(f"{'FAIL' if problems else 'ok  '} {d.name} ({words} words)")
         for p in problems:
             print(f"     {p}")

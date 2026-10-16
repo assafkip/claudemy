@@ -60,7 +60,7 @@ Show the user a short line on what's being read (how many pages, the main kinds 
 When the user names someone, find where that person publishes (Substack, an own-site blog with a sitemap or RSS feed). Probe it before trusting it (Substack: `https://<host>/api/v1/archive?sort=new&limit=50`; sites: `/sitemap.xml` or `/feed`). Add one entry under `"authors"` in `sources.json`:
 ```json
 {"topic": "...", "authors": [
-  {"name": "Jane Doe", "what": "one line", "substack": "janedoe.substack.com"},
+  {"name": "Jane Doe", "what": "one line", "substack": "janedoe.substack.com", "limit": 150, "min_words": 150},
   {"name": "John Roe", "what": "one line", "site": {"kind": "sitemap", "sitemaps": ["https://johnroe.com/sitemap.xml"], "url_pattern": "johnroe\\.com/blog/", "limit": 150, "min_words": 150}},
   {"name": "Ann Poe", "what": "one line", "site": {"kind": "rss", "feed": "https://annpoe.com/feed", "limit": 100}}
 ]}

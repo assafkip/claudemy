@@ -17,7 +17,7 @@ Both paths finish with the same warm EQ and loudness pass in ffmpeg.
 
 Usage: python3 render_audio.py <script.txt> <out.mp3>
 """
-import json, os, re, shutil, subprocess, sys, tempfile, urllib.request
+import json, os, re, shutil, subprocess, sys, tempfile, urllib.error, urllib.request
 from pathlib import Path
 
 POLISH_AF = (
@@ -61,8 +61,14 @@ def elevenlabs_parts(turns, tmp, key):
             "https://api.elevenlabs.io/v1/text-to-dialogue", data=json.dumps(body).encode(),
             headers={"xi-api-key": key, "Content-Type": "application/json", "Accept": "audio/mpeg"})
         part = tmp / f"part{i}.mp3"
-        with urllib.request.urlopen(req, timeout=300) as r:
-            part.write_bytes(r.read())
+        try:
+            with urllib.request.urlopen(req, timeout=300) as r:
+                part.write_bytes(r.read())
+        except urllib.error.HTTPError as e:
+            # "HTTP Error 401" alone hides the cause (bad key, quota, unknown voice id);
+            # the API says which in the response body. The key is never printed.
+            detail = e.read().decode("utf-8", "replace").strip()[:300]
+            sys.exit(f"ElevenLabs refused batch {i + 1}: HTTP {e.code} {e.reason}. {detail}")
         parts.append(part)
     return parts
 

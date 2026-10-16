@@ -23,8 +23,21 @@ def main() -> int:
     # Single-quote for the shell; the only character that needs escaping inside
     # single quotes is the single quote itself.
     quoted = "'" + key.replace("'", "'\\''") + "'"
+    line = f"export ELEVENLABS_API_KEY={quoted}"
+    # SessionStart fires on startup, resume, clear and compact. Append only when the
+    # last export of the key in the file is a different one: repeats stay single, and
+    # switching back to an earlier key still makes it the active one. Read as bytes,
+    # since other hooks write to this file too and may not write UTF-8.
+    try:
+        with open(env_file, "rb") as f:
+            data = f.read()
+    except OSError:
+        data = b""
+    exports = [l for l in data.splitlines() if l.startswith(b"export ELEVENLABS_API_KEY=")]
+    if exports and exports[-1] == line.encode("utf-8"):
+        return 0
     with open(env_file, "a", encoding="utf-8") as f:
-        f.write(f"export ELEVENLABS_API_KEY={quoted}\n")
+        f.write(("\n" if data and not data.endswith(b"\n") else "") + line + "\n")
     return 0
 
 

@@ -1,7 +1,7 @@
 {
   "name": "claudemy",
   "displayName": "Claudemy",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "An open-source alternative to Udemy and Coursera: give Claude a topic, it researches the web and builds a course of 2-minute two-host audio lessons with cited sources and one small practice each.",
   "author": {
     "name": "Assaf Kipnis",
