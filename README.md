@@ -52,7 +52,7 @@ As a Claude Code plugin:
 /plugin install claudemy@claudemy
 ```
 
-Or copy `skills/claudemy/` into `~/.claude/skills/`, or download [`dist/claudemy.skill`](dist/claudemy.skill).
+Or copy `skills/claudemy/` into `~/.claude/skills/`, or download [`claudemy.skill` from the latest release](https://github.com/assafkip/claudemy/releases/download/v0.2.0/claudemy.skill).
 
 Then ask for any topic: `teach me <topic>`.
 

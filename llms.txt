@@ -21,5 +21,5 @@ Key facts:
 ## Optional
 - [Release v0.2.0](https://github.com/assafkip/claudemy/releases/tag/v0.2.0)
 - [Demo GIF](https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.gif): typing "teach me negotiation" and getting 2-minute lessons
-- [Packaged skill](https://github.com/assafkip/claudemy/raw/main/dist/claudemy.skill)
+- [Packaged skill](https://github.com/assafkip/claudemy/releases/download/v0.2.0/claudemy.skill)
 - [License (MIT)](https://github.com/assafkip/claudemy/blob/main/LICENSE)
