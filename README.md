@@ -8,7 +8,7 @@ Claudemy is a free Claude Code skill that builds the course you will actually fi
 > teach me negotiation
 ```
 
-https://github.com/user-attachments/assets/f6cbf3b5-9a8f-449b-8489-e1a4e4b810d7
+https://github.com/user-attachments/assets/d6447515-f442-4b77-a482-544d95dc4799
 
 ## What lesson 1 looks like
 
