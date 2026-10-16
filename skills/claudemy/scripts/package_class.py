@@ -16,7 +16,17 @@ def lesson_dirs(ws):
 
 
 def zip_audio(ws, out, max_bytes):
-    mp3s = [m for d in lesson_dirs(ws) for m in sorted(d.glob("*.mp3"))]
+    mp3s, names = [], {}
+    for d in lesson_dirs(ws):
+        found = sorted(d.glob("*.mp3"))
+        if len(found) > 1:
+            # Two renders in one folder used to share one member name; whichever
+            # extracted last won, silently. Now each keeps its own name, and the run says so.
+            print(f"{d.name}: {len(found)} mp3 files, each packed under its own name: "
+                  + ", ".join(f.name for f in found), file=sys.stderr)
+        for m in found:
+            names[m] = f"{d.name}.mp3" if len(found) == 1 else f"{d.name}-{m.stem}.mp3"
+        mp3s += found
     groups, current, size = [], [], 0
     for m in mp3s:
         if current and size + m.stat().st_size > max_bytes:
@@ -32,7 +42,7 @@ def zip_audio(ws, out, max_bytes):
         path = out / f"audio-lessons-{first}-to-{last}.zip"
         with zipfile.ZipFile(path, "w") as z:
             for m in group:
-                z.write(m, f"{m.parent.name}.mp3")
+                z.write(m, names[m])
         made.append(path)
     return made
 

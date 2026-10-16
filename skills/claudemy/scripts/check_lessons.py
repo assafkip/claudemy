@@ -50,10 +50,13 @@ def check_script(text):
 
 
 def check_card(text, urls):
-    body = re.sub(r"^<!--.*?-->\n?", "", text, flags=re.S)
-    problems = [f"card missing {s!r}" for s in CARD_SECTIONS if s not in text]
+    # Every check runs on what the learner sees. HTML comments (editor notes, a
+    # commented-out draft section) are not content: a section that exists only
+    # inside one is missing, a demand phrase inside one is not a fail.
+    body = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    problems = [f"card missing {s!r}" for s in CARD_SECTIONS if s not in body]
     problems += [f"card: {m}" for m in banned(body)]
-    cited = [u.rstrip(".,") for u in re.findall(r"https?://[^\s)>\]]+", text)]
+    cited = [u.rstrip(".,") for u in re.findall(r"https?://[^\s)>\]]+", body)]
     if not cited:
         problems.append("card cites no source")
     problems += [f"card cites a page that is not in raw/: {u}" for u in cited if u not in urls]

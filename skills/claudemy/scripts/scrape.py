@@ -126,15 +126,47 @@ def scrape_substack(ws, person, host):
     print(f"{person['name']}: {len(posts)} in archive, {new} new")
 
 
+SITEMAP_DEPTH = 2  # index -> child sitemaps -> at most one more index level
+
+
+def sitemap_locs(sm, depth=0):
+    """(lastmod, url) for every <url> in one sitemap. WordPress, Yoast and most
+    big blogs serve a sitemap index at /sitemap.xml: <sitemap><loc> children
+    instead of <url> blocks. Those are followed, SITEMAP_DEPTH levels deep;
+    before this, an index read as zero posts with no message."""
+    raw = fetch(sm)
+    if "<sitemapindex" in raw:
+        children = [m.group(1).strip() for block in re.findall(r"<sitemap>(.*?)</sitemap>", raw, re.S)
+                    if (m := re.search(r"<loc>([^<]+)", block))]
+        if depth >= SITEMAP_DEPTH:
+            print(f"{sm}: sitemap index nested {depth + 1} deep, not followed ({len(children)} children)",
+                  file=sys.stderr)
+            return
+        print(f"{sm}: sitemap index, following {len(children)} child sitemaps")
+        for child in children:
+            if child != sm:
+                yield from sitemap_locs(child, depth + 1)
+        return
+    for block in re.findall(r"<url>(.*?)</url>", raw, re.S):
+        loc = re.search(r"<loc>([^<]+)", block)
+        if loc is None:
+            continue
+        mod = re.search(r"<lastmod>([^<]+)", block)
+        yield (mod.group(1)[:10] if mod else "", loc.group(1).strip())
+
+
 def sitemap_entries(site):
     """(lastmod, url) for every post URL matching the pattern, newest first."""
-    pattern, entries = re.compile(site["url_pattern"]), []
+    pattern, entries, seen = re.compile(site["url_pattern"]), [], 0
     for sm in site["sitemaps"]:
-        for block in re.findall(r"<url>(.*?)</url>", fetch(sm), re.S):
-            loc = re.search(r"<loc>([^<]+)", block).group(1).strip()
-            mod = re.search(r"<lastmod>([^<]+)", block)
+        for mod, loc in sitemap_locs(sm):
+            seen += 1
             if pattern.search(loc):
-                entries.append((mod.group(1)[:10] if mod else "", loc))
+                entries.append((mod, loc))
+    if not entries:
+        # Zero posts used to end the run in silence; the agent needs a reason it can act on.
+        print(f"no urls matched {site['url_pattern']!r} in {len(site['sitemaps'])} sitemap(s), {seen} urls read",
+              file=sys.stderr)
     return sorted(entries, reverse=True)
 
 
@@ -201,7 +233,10 @@ def feed_items(xml):
                "date": item.findtext("pubDate") or item.findtext("dc:date", namespaces=NS) or "",
                "html": item.findtext("content:encoded", namespaces=NS) or item.findtext("description") or ""}
     for entry in root.iter(f"{{{NS['atom']}}}entry"):
-        link = entry.find("atom:link", NS)
+        # RFC 4287: rel="alternate" (or no rel) is the post's web page. Blogger lists
+        # replies/edit/self links first, podcast feeds list the enclosure first.
+        links = entry.findall("atom:link", NS)
+        link = next((l for l in links if l.get("rel") in (None, "alternate")), links[0] if links else None)
         yield {"url": (link.get("href") if link is not None else "").strip(),
                "title": entry.findtext("atom:title", namespaces=NS) or "",
                "date": entry.findtext("atom:published", namespaces=NS) or entry.findtext("atom:updated", namespaces=NS) or "",
