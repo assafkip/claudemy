@@ -52,7 +52,7 @@ As a Claude Code plugin:
 /plugin install claudemy@claudemy
 ```
 
-Or copy `skills/claudemy/` into `~/.claude/skills/`, or download [`claudemy.skill` from the latest release](https://github.com/assafkip/claudemy/releases/download/v0.2.0/claudemy.skill).
+Or copy `skills/claudemy/` into `~/.claude/skills/`, or download [`claudemy.skill` from the latest release](https://github.com/assafkip/claudemy/releases/latest/download/claudemy.skill).
 
 Then ask for any topic: `teach me <topic>`.
 
@@ -60,10 +60,13 @@ Then ask for any topic: `teach me <topic>`.
 
 - [Claude Code](https://claude.com/claude-code) with web search.
 - Python 3 with `beautifulsoup4` (`pip install beautifulsoup4`), and `ffmpeg`.
-- Audio: an ElevenLabs API key in `ELEVENLABS_API_KEY` for natural two-voice lessons. Without one, macOS's built-in voices are used (free, plainer).
+- Audio: an ElevenLabs API key for natural two-voice lessons, either in `ELEVENLABS_API_KEY` or typed into the plugin's configuration prompt when you install it (stored in your OS keychain). Without one, macOS's built-in voices are used (free, plainer).
 - Optional: `pandoc` for a Word copy of the cards.
 
 Voices can be changed with `CLAUDEMY_VOICE_A` / `CLAUDEMY_VOICE_B` (ElevenLabs voice ids) or `CLAUDEMY_SAY_A` / `CLAUDEMY_SAY_B` (macOS voices).
+
+## Data
+Claudemy runs on your machine inside Claude Code. It fetches the public web pages it researches and saves them in a local workspace folder. If you set an ElevenLabs API key, the text of each lesson is sent to ElevenLabs to render the audio. Without a key, audio is rendered locally with macOS voices. The skill has no server, collects no analytics, and stores nothing outside your machine. Details: [privacy page](https://assafkip.github.io/claudemy/privacy.html).
 
 ## FAQ
 

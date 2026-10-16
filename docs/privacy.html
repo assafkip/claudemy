@@ -1,0 +1,64 @@
+<!doctype html>
+<!-- eyeball-gate-skip: palette matches the product's own brand (cream and burnt orange from the Claudemy demo), and a privacy page carries no call to action by design -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claudemy privacy and data handling</title>
+<meta name="description" content="What Claudemy does with your data: it runs on your machine, fetches public web pages you research, sends lesson text to ElevenLabs only if you set a key, and has no server or analytics.">
+<link rel="canonical" href="https://assafkip.github.io/claudemy/privacy.html">
+<style>
+  :root { --bg:#faf8f4; --fg:#1c1917; --muted:#57534e; --accent:#c2410c; --rule:#e7e2da; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1917; --fg:#f5f1ea; --muted:#b8b0a4; --accent:#fb923c; --rule:#3a3330; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:40px 16px 64px; }
+  h1, h2 { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; line-height:1.2; }
+  h1 { font-size:2rem; margin:0 0 8px; }
+  h2 { font-size:1.3rem; margin:32px 0 8px; }
+  a { color:var(--accent); }
+  .meta { color:var(--muted); margin:0 0 24px; }
+  ul { padding-left:1.2em; }
+  footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--rule); color:var(--muted); font-size:0.95rem; }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="./">Claudemy</a></p>
+  <h1>Privacy and data handling</h1>
+  <p class="meta">Last updated 15 October 2026. Applies to the Claudemy Claude Code skill and plugin, version 0.2.0 and later.</p>
+
+  <h2>Where it runs</h2>
+  <p>Claudemy runs on your own machine inside Claude Code. It has no server of its own, no account, and no analytics. Nothing is stored outside your computer except where this page says so.</p>
+
+  <h2>What it reads</h2>
+  <ul>
+    <li>The topic you type, and your reactions to the sample lesson, inside your Claude Code session.</li>
+    <li>Public web pages it finds through Claude Code's web search and fetch tools while researching the topic. Copies of those pages are saved in a local workspace folder for your own study and for the citation checker.</li>
+  </ul>
+
+  <h2>What it sends, and to whom</h2>
+  <ul>
+    <li><strong>Claude.</strong> Your topic and the research pass through Claude Code the same way any Claude Code session does, under Anthropic's terms for your plan.</li>
+    <li><strong>ElevenLabs, only if you choose it.</strong> If you set an ElevenLabs API key, the text of each lesson script is sent to ElevenLabs to render the two voices, under ElevenLabs' terms. Your key is read from the <code>ELEVENLABS_API_KEY</code> environment variable or the plugin's configuration prompt and is used for that call only. If you set no key, audio is rendered locally with macOS built-in voices and nothing leaves your machine for audio.</li>
+  </ul>
+
+  <h2>What it keeps</h2>
+  <p>Lessons, cards, audio files, the playbook and the saved research pages are written to a workspace folder on your machine. Delete the folder to delete everything.</p>
+
+  <h2>What it does not do</h2>
+  <ul>
+    <li>No telemetry, usage tracking or crash reporting.</li>
+    <li>No cookies, no sign-up, no email collection.</li>
+    <li>No sharing or selling of anything to anyone.</li>
+  </ul>
+
+  <h2>Open source</h2>
+  <p>The code is MIT licensed and public at <a href="https://github.com/assafkip/claudemy">github.com/assafkip/claudemy</a>. Every network call the scripts make is visible in <code>skills/claudemy/scripts/</code>.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or concerns: open an issue at <a href="https://github.com/assafkip/claudemy/issues">github.com/assafkip/claudemy/issues</a>.</p>
+
+  <footer>Built by Assaf Kipnis. More at <a href="https://askconsulting.io">askconsulting.io</a>.</footer>
+</main>
+</body>
+</html>

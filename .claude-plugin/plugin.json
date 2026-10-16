@@ -1,6 +1,7 @@
 {
   "name": "claudemy",
-  "version": "0.2.0",
+  "displayName": "Claudemy",
+  "version": "0.3.0",
   "description": "An open-source alternative to Udemy and Coursera: give Claude a topic, it researches the web and builds a course of 2-minute two-host audio lessons with cited sources and one small practice each.",
   "author": {
     "name": "Assaf Kipnis",
@@ -18,5 +19,17 @@
     "microlearning",
     "podcast",
     "elevenlabs"
-  ]
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://assafkip.github.io/claudemy/",
+  "supportUrl": "https://github.com/assafkip/claudemy/issues",
+  "privacyPolicyUrl": "https://assafkip.github.io/claudemy/privacy.html",
+  "userConfig": {
+    "elevenlabs_api_key": {
+      "type": "string",
+      "title": "ElevenLabs API key",
+      "description": "Optional. Renders lessons with two natural ElevenLabs voices. Leave empty to use the free macOS voices.",
+      "sensitive": true
+    }
+  }
 }

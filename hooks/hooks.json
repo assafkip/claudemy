@@ -1,0 +1,17 @@
+{
+  "description": "Hands the ElevenLabs API key from the plugin's configuration prompt to the audio renderer for this session.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/export_elevenlabs_key.py"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

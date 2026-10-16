@@ -91,7 +91,7 @@ def main(script_path, out_path):
     turns = parse_turns(Path(script_path).read_text())
     key = os.environ.get("ELEVENLABS_API_KEY")
     if not key and not shutil.which("say"):
-        sys.exit("no audio engine: set ELEVENLABS_API_KEY, or run on macOS for the built-in voices")
+        sys.exit("no audio engine: set ELEVENLABS_API_KEY (or the plugin's ElevenLabs key option), or run on macOS for the built-in voices")
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
         parts = elevenlabs_parts(turns, tmp, key) if key else say_parts(turns, tmp)
