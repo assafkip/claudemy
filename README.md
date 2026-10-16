@@ -8,7 +8,7 @@ Claudemy is a free Claude Code skill that builds the course you will actually fi
 > teach me negotiation
 ```
 
-![Claudemy demo: type a topic, get 2-minute audio lessons, each with a card, one thing to try and a rule to keep](https://raw.githubusercontent.com/assafkip/claudemy/main/.github/claudemy-demo.gif)
+![Claudemy demo: type a topic, get 2-minute audio lessons, each with a card, one thing to try and a rule to keep](https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.gif)
 
 With sound:
 

@@ -12,10 +12,14 @@ Key facts:
 - Requires: Claude Code with web search, Python 3, beautifulsoup4, ffmpeg.
 
 ## Docs
+- [Website](https://assafkip.github.io/claudemy/): what Claudemy is, install, needs, FAQ, comparison with Udemy and Coursera
+- [Article: the citation checker](https://assafkip.github.io/claudemy/blog/citation-checker.html): how the skill refuses invented sources, and what the checker does not catch
 - [README](https://github.com/assafkip/claudemy/blob/main/README.md): what it makes, how it works, install, FAQ
 - [Skill instructions](https://github.com/assafkip/claudemy/blob/main/skills/claudemy/SKILL.md): the full step-by-step workflow Claude follows
 - [Lesson example](https://github.com/assafkip/claudemy/blob/main/skills/claudemy/references/lesson-example.md): a complete lesson script and card
 
 ## Optional
+- [Release v0.2.0](https://github.com/assafkip/claudemy/releases/tag/v0.2.0)
+- [Demo GIF](https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.gif): typing "teach me negotiation" and getting 2-minute lessons
 - [Packaged skill](https://github.com/assafkip/claudemy/raw/main/dist/claudemy.skill)
 - [License (MIT)](https://github.com/assafkip/claudemy/blob/main/LICENSE)

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I built a course generator. The hard part was stopping it from inventing sources.</title>
+<meta name="description" content="Claudemy is a free Claude Code skill that makes 2-minute audio lessons, and a citation checker that refuses any lesson citing a page the research never read.">
+<link rel="canonical" href="https://assafkip.github.io/claudemy/blog/citation-checker.html">
+<meta name="author" content="Assaf Kipnis">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Claudemy">
+<meta property="og:title" content="I built a course generator. The hard part was stopping it from inventing sources.">
+<meta property="og:description" content="Claudemy is a free Claude Code skill that makes 2-minute audio lessons, and a citation checker that refuses any lesson citing a page the research never read.">
+<meta property="og:url" content="https://assafkip.github.io/claudemy/blog/citation-checker.html">
+<meta property="og:image" content="https://raw.githubusercontent.com/assafkip/claudemy/main/.github/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Claudemy: any topic as 2-minute audio lessons">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="I built a course generator. The hard part was stopping it from inventing sources.">
+<meta name="twitter:description" content="Claudemy is a free Claude Code skill that makes 2-minute audio lessons, and a citation checker that refuses any lesson citing a page the research never read.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/assafkip/claudemy/main/.github/social-preview.png">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#faf8f4;--fg:#1c1917;--muted:#57534e;--rule:#e7e2d9;--accent:#c2410c;--code-bg:#f1ede5;
+--serif:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1714;--fg:#ede8e0;--muted:#a8a29e;--rule:#3a342e;--accent:#fb923c;--code-bg:#26211c}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 var(--sans)}
+main,header.site,footer{max-width:720px;margin:0 auto;padding:0 16px}
+header.site{padding-top:20px;font-size:15px}
+header.site a{color:var(--fg);text-decoration:none;font-family:var(--serif);font-weight:700}
+h1,h2,h3{font-family:var(--serif);line-height:1.2;font-weight:700}
+h1{font-size:2rem;margin:1.2em 0 .4em}
+h2{font-size:1.45rem;margin:2em 0 .5em;padding-top:1em;border-top:1px solid var(--rule)}
+h3{font-size:1.1rem;margin:1.4em 0 .3em}
+p,ul,ol{margin:0 0 1em}
+li{margin:.25em 0}
+a{color:var(--accent);text-underline-offset:2px}
+code,pre{font-family:var(--mono);font-size:.9em}
+code{background:var(--code-bg);padding:.1em .3em;border-radius:4px;overflow-wrap:anywhere}
+pre{background:var(--code-bg);padding:12px 14px;border-radius:6px;overflow-x:auto;line-height:1.45}
+pre code{background:none;padding:0;overflow-wrap:normal}
+.cmd{font-family:var(--mono);font-size:1.15rem;color:var(--accent);background:var(--code-bg);padding:12px 14px;border-radius:6px;margin:0 0 1.2em}
+.dek{font-size:1.1rem;color:var(--muted);font-style:italic}
+img{max-width:100%;height:auto;display:block;border-radius:6px}
+figure{margin:0 0 1.2em}
+figcaption{font-size:.9rem;color:var(--muted);margin-top:.4em}
+.faq h3{margin-top:1.2em}
+footer{border-top:1px solid var(--rule);margin-top:3em;padding-top:1em;padding-bottom:2em;font-size:.95rem;color:var(--muted)}
+footer ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.4em 1.2em}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": "https://assafkip.github.io/claudemy/blog/citation-checker.html#article",
+      "headline": "I built a course generator. The hard part was stopping it from inventing sources.",
+      "description": "Claudemy is a free Claude Code skill that makes 2-minute audio lessons, and a citation checker that refuses any lesson citing a page the research never read.",
+      "author": {
+        "@type": "Person",
+        "name": "Assaf Kipnis",
+        "url": "https://askconsulting.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Assaf Kipnis",
+        "url": "https://askconsulting.io"
+      },
+      "datePublished": "2026-10-15",
+      "image": "https://raw.githubusercontent.com/assafkip/claudemy/main/.github/social-preview.png",
+      "mainEntityOfPage": "https://assafkip.github.io/claudemy/blog/citation-checker.html",
+      "about": {
+        "@id": "https://assafkip.github.io/claudemy/#app"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site"><a href="../">Claudemy</a></header>
+<main>
+<article>
+<h1>I built a course generator. The hard part was stopping it from inventing sources.</h1>
+<p class="dek">Claudemy is a free Claude Code skill that makes 2-minute audio lessons, and a citation checker that refuses any lesson citing a page the research never read.</p>
+<h2>Why 40-hour courses never get finished</h2>
+<p>You wanted to learn negotiation. You got a 40-hour course, a syllabus someone wrote years ago, and a tab you never reopened.</p>
+<p>I think the format is the problem. So I built Claudemy, an open-source Claude Code skill that does the opposite. You type this:</p>
+<pre><code>&gt; teach me negotiation</code></pre>
+<p>It researches the web and hands back about 12 audio lessons, 2 minutes each. Two hosts talking. Each lesson has a card with one small thing to try.</p>
+<figure><img src="https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.gif" width="800" height="450" loading="lazy" alt="Claudemy demo: type a topic, get 2-minute audio lessons, each with a card, one thing to try and a rule to keep"></figure>
+<p>Making the audio was the smaller problem. The hard part was trust.</p>
+<h2>The problem with AI-generated courses and fake citations</h2>
+<p>Ask a model to teach you something and cite its sources. You will get citations. Some will point at pages that do not exist. A confident link to a Harvard page that was never published looks exactly like a real one.</p>
+<p>I measured a version of this on the first full test. Search models suggested 34 URLs for the reading list. 12 of them were dead.</p>
+<p>A course built on that is worse than no course. You would learn a claim, trust it because it had a source, and never find out the source was invented.</p>
+<h2>What the skill does, step by step</h2>
+<p>Claudemy runs as a Claude Code skill. The steps:</p>
+<ol>
+<li><strong>Maps the topic</strong> into 12 to 18 sub-topics, after searching for how the topic is usually taught.</li>
+<li><strong>Researches the web.</strong> 20 to 40 pages from practitioners, official docs, research summaries and a few dissenting views. No more than 3 pages from one site, so no single voice dominates.</li>
+<li><strong>Reads and compares.</strong> Reader agents take cited notes. One agent merges them into themes with agreement counts.</li>
+<li><strong>Plans the course</strong> in arcs of about 4 lessons, foundations first.</li>
+<li><strong>Makes one sample lesson</strong> and waits for your reaction. Then it writes and records the rest.</li>
+</ol>
+<p>Step 5 exists because fixing the format on one lesson is cheap. Fixing it on twelve is not.</p>
+<h2>The citation checker</h2>
+<p>Before any audio renders, a script called <code>check_lessons.py</code> reads each lesson.</p>
+<p>It fails the lesson if the card cites a URL that is not in the pages the research actually saved. Not "looks wrong". Not on disk, fails.</p>
+<p>It also checks the word band for a 2-minute lesson (280 to 350 words), banned phrases, and that every card section is present. The same script fails the lesson plan if the plan cites a URL that is not on disk.</p>
+<p>The scraper does its part. It names every page it could not save and why: an HTTP error, a paywalled teaser, a thin or JavaScript-only page. While fewer than 20 pages are saved, the skill searches again.</p>
+<p>The rule underneath is one line. A citation must be a page on disk. That is the whole defense against invented sources.</p>
+<h2>What the checker does not catch</h2>
+<p>This is the part most write-ups skip, so here it is.</p>
+<p><strong>It cannot tell whether the page says what the lesson claims.</strong> The checker matches URLs against files. That is all it does. On the first full test I checked the plan by hand and found 3 stories credited to the wrong page. The URLs were real and on disk, so the script passed them. A real page attached to the wrong claim is still a bad citation.</p>
+<p>That was one full test, so treat it as an observation, not a rate. It is also why the skill tells the agent to send every story and number in the plan back to the note it came from, and the note back to its page.</p>
+<p><strong>It said "ok" when there was nothing to check.</strong> The plan check printed "ok" on a plan that cited no URLs at all. Nothing to check was reading as a pass. It now prints skip, with the reason. A check that passes on empty input is theater.</p>
+<p><strong>The packager lied about size.</strong> The script that zips the audio printed decimal MB against a cap measured in MiB. A zip of 24.8 MiB read 26.0 against a limit of 25. It looked over the cap when it was under. Units matter when a number is the whole message.</p>
+<p>The first is a limit of the design. The other two were bugs in the scripts. That is the honest state of it.</p>
+<h2>What a course actually comes out as</h2>
+<p>The demo is a real negotiation course. Lesson 1 is "Your Walk-Away", 2:27 of two hosts talking. The card next to it gives you:</p>
+<ul>
+<li>The idea in three lines. Decide what you will do if the ask fails, before you ask.</li>
+<li>How many sources agree, and who does not.</li>
+<li>One small thing to try, with the time it takes.</li>
+<li>Links to the pages it came from.</li>
+</ul>
+<p>Across the course you also get:</p>
+<ul>
+<li><strong>A playbook.</strong> One rule per lesson, collected in one file you keep.</li>
+<li><strong>A lesson plan that shows where experts split.</strong> Laid out as decisions, not lessons.</li>
+<li><strong>MP3 files</strong> you can play anywhere.</li>
+</ul>
+<p>Everything for one class lives in a folder under <code>./claudemy/&lt;topic-slug&gt;/</code>: the saved pages, the notes, the agreement map, each lesson's script, card and audio. The pages are saved for your private study. Do not republish them.</p>
+<p>A 12-lesson course is a long-running Claude Code session. Research, reading, writing, and about 25 minutes of generated audio.</p>
+<p>You can also build a class from one person's work: <code>teach me negotiation from &lt;name&gt;&#x27;s writing</code>. It finds their Substack or blog and builds the lessons from that. If their archive cannot be read, it says so and offers research mode instead.</p>
+<h2>How to install Claudemy</h2>
+<p>In Claude Code:</p>
+<pre><code>/plugin marketplace add assafkip/claudemy
+/plugin install claudemy@claudemy</code></pre>
+<p>Or copy <code>skills/claudemy/</code> into <code>~/.claude/skills/</code>, or download <code>dist/claudemy.skill</code> from the repo.</p>
+<p>Then ask for any topic: <code>teach me &lt;topic&gt;</code>.</p>
+<p>What you need:</p>
+<ul>
+<li>Claude Code with web search</li>
+<li>Python 3 with <code>beautifulsoup4</code> (<code>pip install beautifulsoup4</code>), and <code>ffmpeg</code></li>
+<li>For natural two-voice audio, an ElevenLabs API key in <code>ELEVENLABS_API_KEY</code>. Without one, macOS built-in voices are used. Free, plainer.</li>
+<li>Optional: <code>pandoc</code> for a Word copy of the cards</li>
+</ul>
+<p>The skill is MIT licensed. You pay only for what you already use: your Claude plan, and ElevenLabs credits if you want the premium voices.</p>
+<p>Health, legal and financial topics get a note where the advice depends on your situation. It works best on anything people write about well on the open web: negotiation, public speaking, sourdough, pricing, SQL, music theory.</p>
+<h2>Tell me where it breaks</h2>
+<p>Repo: <a href="https://github.com/assafkip/claudemy">github.com/assafkip/claudemy</a></p>
+<p>I know it breaks on a claim attached to the wrong page. I do not yet know which topics make it fall over. If you run it, tell me which ones, in the repo issues or in a GitHub issue.</p>
+</article>
+<h2>More</h2>
+<ul>
+<li><a href="../">Claudemy home: what it makes, install, FAQ</a></li>
+<li><a href="https://github.com/assafkip/claudemy">Claudemy on GitHub</a></li>
+</ul>
+</main>
+<footer>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="https://github.com/assafkip/claudemy">GitHub repo</a></li>
+<li><a href="https://github.com/assafkip/claudemy/releases/tag/v0.2.0">Release v0.2.0</a></li>
+</ul>
+</footer>
+</body>
+</html>

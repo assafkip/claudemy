@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claudemy: any topic as 2-minute audio lessons with cited sources</title>
+<meta name="description" content="Claudemy is a free, open-source Claude Code skill that turns any topic into 2-minute two-host audio lessons with cited sources and one thing to try.">
+<link rel="canonical" href="https://assafkip.github.io/claudemy/">
+<meta name="author" content="Assaf Kipnis">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Claudemy">
+<meta property="og:title" content="Claudemy: any topic as 2-minute audio lessons with cited sources">
+<meta property="og:description" content="Claudemy is a free, open-source Claude Code skill that turns any topic into 2-minute two-host audio lessons with cited sources and one thing to try.">
+<meta property="og:url" content="https://assafkip.github.io/claudemy/">
+<meta property="og:image" content="https://raw.githubusercontent.com/assafkip/claudemy/main/.github/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Claudemy: any topic as 2-minute audio lessons">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Claudemy: any topic as 2-minute audio lessons with cited sources">
+<meta name="twitter:description" content="Claudemy is a free, open-source Claude Code skill that turns any topic into 2-minute two-host audio lessons with cited sources and one thing to try.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/assafkip/claudemy/main/.github/social-preview.png">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#faf8f4;--fg:#1c1917;--muted:#57534e;--rule:#e7e2d9;--accent:#c2410c;--code-bg:#f1ede5;
+--serif:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1714;--fg:#ede8e0;--muted:#a8a29e;--rule:#3a342e;--accent:#fb923c;--code-bg:#26211c}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 var(--sans)}
+main,header.site,footer{max-width:720px;margin:0 auto;padding:0 16px}
+header.site{padding-top:20px;font-size:15px}
+header.site a{color:var(--fg);text-decoration:none;font-family:var(--serif);font-weight:700}
+h1,h2,h3{font-family:var(--serif);line-height:1.2;font-weight:700}
+h1{font-size:2rem;margin:1.2em 0 .4em}
+h2{font-size:1.45rem;margin:2em 0 .5em;padding-top:1em;border-top:1px solid var(--rule)}
+h3{font-size:1.1rem;margin:1.4em 0 .3em}
+p,ul,ol{margin:0 0 1em}
+li{margin:.25em 0}
+a{color:var(--accent);text-underline-offset:2px}
+code,pre{font-family:var(--mono);font-size:.9em}
+code{background:var(--code-bg);padding:.1em .3em;border-radius:4px;overflow-wrap:anywhere}
+pre{background:var(--code-bg);padding:12px 14px;border-radius:6px;overflow-x:auto;line-height:1.45}
+pre code{background:none;padding:0;overflow-wrap:normal}
+.cmd{font-family:var(--mono);font-size:1.15rem;color:var(--accent);background:var(--code-bg);padding:12px 14px;border-radius:6px;margin:0 0 1.2em}
+.dek{font-size:1.1rem;color:var(--muted);font-style:italic}
+img{max-width:100%;height:auto;display:block;border-radius:6px}
+figure{margin:0 0 1.2em}
+figcaption{font-size:.9rem;color:var(--muted);margin-top:.4em}
+.faq h3{margin-top:1.2em}
+footer{border-top:1px solid var(--rule);margin-top:3em;padding-top:1em;padding-bottom:2em;font-size:.95rem;color:var(--muted)}
+footer ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.4em 1.2em}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://assafkip.github.io/claudemy/#app",
+      "name": "Claudemy",
+      "description": "A free, open-source Claude Code skill that turns any topic into a short audio course: about 12 two-host audio lessons of 2 minutes each, with a card, one small practice and links to cited sources per lesson.",
+      "url": "https://assafkip.github.io/claudemy/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "macOS, Linux",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "license": "https://opensource.org/license/mit",
+      "codeRepository": "https://github.com/assafkip/claudemy",
+      "softwareVersion": "0.2.0",
+      "author": {
+        "@type": "Person",
+        "name": "Assaf Kipnis",
+        "url": "https://askconsulting.io"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://assafkip.github.io/claudemy/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Claudemy free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The skill is MIT licensed. You pay only for what you already use: your Claude plan, and ElevenLabs credits if you want the premium voices. The macOS voices cost nothing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is it different from Udemy or Coursera?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Course sites sell a fixed course someone recorded once. Claudemy builds a course on the topic you name, at your level, from current sources, and shows you where those sources disagree. Lessons are 2 minutes and end in one thing to try, so the course is built to be finished."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What topics does it work for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Anything people write about well on the open web. Skills (negotiation, public speaking, sourdough), professional topics (pricing, hiring, SQL), and subjects (stoicism, music theory). Health, legal and financial topics get a note where advice depends on your situation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it copy other people's content?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. It reads pages the way a researcher does, writes its own lessons, and links to the sources. Pages it reads are saved only in your local workspace for your own study."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use it without ElevenLabs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. On a Mac it falls back to the built-in voices. The cards and playbook work with no audio at all."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does a course take to make?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A 12-lesson course is a long-running Claude Code session: research, reading, writing and about 25 minutes of generated audio."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I learn from one specific expert?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Name them in the request. Claudemy finds their Substack or blog and builds the course from their writing."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "VideoObject",
+      "@id": "https://assafkip.github.io/claudemy/#demo",
+      "name": "Claudemy demo: teach me negotiation",
+      "description": "Type a topic in Claude Code and get 2-minute audio lessons, each with a card, one thing to try and a rule to keep.",
+      "thumbnailUrl": "https://raw.githubusercontent.com/assafkip/claudemy/main/.github/social-preview.png",
+      "contentUrl": "https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.mp4",
+      "uploadDate": "2026-10-15",
+      "duration": "PT41S"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site"><a href="./">Claudemy</a></header>
+<main>
+<h1>Claudemy is a free, open-source Claude Code skill that turns any topic into a short audio course.</h1>
+<p>You name a topic. It researches the web and hands back about 12 audio lessons of 2 minutes each, with cited sources.</p>
+<pre class="cmd"><code>&gt; teach me negotiation</code></pre>
+<figure>
+<img src="https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.gif" width="800" height="450" alt="Claudemy demo: type a topic, get 2-minute audio lessons, each with a card, one thing to try and a rule to keep">
+<figcaption>A real negotiation course. Lesson 1 is "Your Walk-Away", 2:27 of two hosts talking. <a href="https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.mp4">Watch the demo with sound</a>.</figcaption>
+</figure>
+
+<h2>What you get</h2>
+<ul>
+<li><strong>About 12 audio lessons, 2 minutes each.</strong> Two hosts talking, not a lecture. MP3 files you can play anywhere.</li>
+<li><strong>A card per lesson.</strong> Three-line idea, source agreement, one practice, links to go deeper.</li>
+<li><strong>A playbook.</strong> One rule per lesson, collected in one file you keep.</li>
+<li><strong>A lesson plan that shows where the experts split.</strong> Laid out as decisions, not lessons.</li>
+<li><strong>Real citations.</strong> A checker refuses any lesson that cites a page the research did not actually read.</li>
+</ul>
+<p>Listen for 2 minutes. Try one thing. Keep one rule.</p>
+
+<h2>How it works</h2>
+<ol>
+<li><strong>Maps the topic</strong> into sub-topics, based on how it is usually taught.</li>
+<li><strong>Researches the web.</strong> 20 to 40 pages from practitioners, official docs, research summaries and a few dissenting views. No more than 3 pages from one site, so no single voice dominates.</li>
+<li><strong>Reads and compares.</strong> Reader agents pull cited notes. One agent merges them into themes with agreement counts.</li>
+<li><strong>Plans the course</strong> in arcs of about 4 lessons, foundations first.</li>
+<li><strong>Makes one sample lesson</strong> and waits for your reaction. Then it writes and records the rest.</li>
+</ol>
+<p>Want a class built from one person's work instead? Say so: <code>teach me negotiation from &lt;name&gt;'s writing</code>. It reads their Substack or blog and builds the class from that.</p>
+<p>Want the full story of how the citation checker works and what it misses? Read <a href="blog/citation-checker.html">I built a course generator. The hard part was stopping it from inventing sources.</a></p>
+
+<h2>Install</h2>
+<p>As a Claude Code plugin:</p>
+<pre><code>/plugin marketplace add assafkip/claudemy
+/plugin install claudemy@claudemy</code></pre>
+<p>Or copy <code>skills/claudemy/</code> into <code>~/.claude/skills/</code>, or download <a href="https://github.com/assafkip/claudemy/raw/main/dist/claudemy.skill"><code>claudemy.skill</code></a> from the <a href="https://github.com/assafkip/claudemy/releases/tag/v0.2.0">v0.2.0 release</a> or the repo.</p>
+<p>Then ask for any topic: <code>teach me &lt;topic&gt;</code>.</p>
+
+<h2>Needs</h2>
+<ul>
+<li><a href="https://claude.com/claude-code">Claude Code</a> with web search.</li>
+<li>Python 3 with <code>beautifulsoup4</code> (<code>pip install beautifulsoup4</code>), and <code>ffmpeg</code>.</li>
+<li>Audio: an ElevenLabs API key in <code>ELEVENLABS_API_KEY</code> for natural two-voice lessons. Without one, macOS's built-in voices are used (free, plainer).</li>
+<li>Optional: <code>pandoc</code> for a Word copy of the cards.</li>
+</ul>
+<p>Voices can be changed with <code>CLAUDEMY_VOICE_A</code> / <code>CLAUDEMY_VOICE_B</code> (ElevenLabs voice ids) or <code>CLAUDEMY_SAY_A</code> / <code>CLAUDEMY_SAY_B</code> (macOS voices).</p>
+
+<h2>FAQ</h2>
+<div class="faq">
+<h3>Is Claudemy free?</h3>
+<p>Yes. The skill is MIT licensed. You pay only for what you already use: your Claude plan, and ElevenLabs credits if you want the premium voices. The macOS voices cost nothing.</p>
+<h3>How is it different from Udemy or Coursera?</h3>
+<p>Course sites sell a fixed course someone recorded once. Claudemy builds a course on the topic you name, at your level, from current sources, and shows you where those sources disagree. Lessons are 2 minutes and end in one thing to try, so the course is built to be finished.</p>
+<h3>What topics does it work for?</h3>
+<p>Anything people write about well on the open web. Skills (negotiation, public speaking, sourdough), professional topics (pricing, hiring, SQL), and subjects (stoicism, music theory). Health, legal and financial topics get a note where advice depends on your situation.</p>
+<h3>Does it copy other people's content?</h3>
+<p>No. It reads pages the way a researcher does, writes its own lessons, and links to the sources. Pages it reads are saved only in your local workspace for your own study.</p>
+<h3>Can I use it without ElevenLabs?</h3>
+<p>Yes. On a Mac it falls back to the built-in voices. The cards and playbook work with no audio at all.</p>
+<h3>How long does a course take to make?</h3>
+<p>A 12-lesson course is a long-running Claude Code session: research, reading, writing and about 25 minutes of generated audio.</p>
+<h3>Can I learn from one specific expert?</h3>
+<p>Yes. Name them in the request. Claudemy finds their Substack or blog and builds the course from their writing.</p>
+</div>
+
+<h2>Claudemy vs Udemy and Coursera</h2>
+<p>Udemy and Coursera sell a fixed course someone recorded once. Claudemy builds the course when you ask for it, on the topic you name, at your level, from current sources it reads when you ask. The difference shows up in a few places:</p>
+<ul>
+<li><strong>Who picks the topic.</strong> On a course site you pick from what exists. With Claudemy you name any topic people write about well on the open web.</li>
+<li><strong>How current it is.</strong> A recorded course stays the way it was recorded. Claudemy researches 20 to 40 current pages each time it builds a course.</li>
+<li><strong>Disagreement.</strong> Claudemy shows where good sources split and how many agree on each idea, so you see the debate instead of one instructor's view.</li>
+<li><strong>Length.</strong> Lessons are 2 minutes and end in one thing to try, so the course is built to be finished.</li>
+<li><strong>Sources.</strong> Every lesson card links to the pages it came from, and a checker refuses citations to pages the research never read.</li>
+<li><strong>Cost.</strong> Claudemy is free and MIT licensed. You pay only for your Claude plan, and ElevenLabs credits if you want the premium voices.</li>
+</ul>
+
+<h2>Who built it</h2>
+<p>Built by Assaf Kipnis. More of his work: <a href="https://askconsulting.io">askconsulting.io</a>.</p>
+</main>
+<footer>
+<ul>
+<li><a href="https://github.com/assafkip/claudemy">GitHub repo</a></li>
+<li><a href="https://github.com/assafkip/claudemy/releases/tag/v0.2.0">Release v0.2.0</a></li>
+<li><a href="blog/citation-checker.html">Article: the citation checker</a></li>
+<li>MIT license</li>
+</ul>
+</footer>
+</body>
+</html>
