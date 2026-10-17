@@ -417,8 +417,11 @@ def main(ws, want=""):
                 scrape_sitemap(ws, person, site)
             elif site.get("kind") == "rss":
                 scrape_rss(ws, person, site)
-        except (*NETWORK_ERRORS, ET.ParseError, NotJson) as e:
+        except (*NETWORK_ERRORS, ET.ParseError, NotJson, ValueError) as e:
             # One unreachable author must not stop the others; the report names it.
+            # ValueError also covers a feed whose declared encoding the XML parser
+            # rejects outright (Shift_JIS, EUC-KR, GB2312...), issue #6: that used
+            # to raise past this try block and stop every author listed after it.
             print(f"{person['name']}: FAILED, {e}", file=sys.stderr)
 
 

@@ -579,6 +579,29 @@ class NonUtf8RawFile(unittest.TestCase):
             self.assertEqual(scrape.urls_on_disk(ws / "raw" / "bob"), {"https://b.com/1"}, buf.getvalue())
 
 
+class FeedEncodingValueError(unittest.TestCase):
+    """Issue #6: a feed whose declared encoding the XML parser rejects (Shift_JIS,
+    EUC-KR, GB2312...) raises ValueError, not ET.ParseError. main() did not catch
+    ValueError, so one such feed stopped every author listed after it."""
+
+    def test_other_authors_still_run(self):
+        good_feed = ('<rss><channel><item><title>t</title><link>https://b.com/1</link><description>'
+                     + "word " * 200 + '</description></item></channel></rss>').encode()
+        bad_feed = ('<?xml version="1.0" encoding="Shift_JIS"?><rss><channel><item><title>t</title>'
+                    '<link>https://a.jp/1</link></item></channel></rss>').encode("shift_jis")
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td)
+            (ws / "sources.json").write_text(json.dumps({"authors": [
+                {"name": "Jp", "site": {"kind": "rss", "feed": "https://a.jp/feed"}},
+                {"name": "Bob", "site": {"kind": "rss", "feed": "https://b.com/feed"}}]}))
+            stack, buf = quiet()
+            with stack, mock.patch.object(scrape, "fetch_bytes",
+                                          side_effect=lambda u: bad_feed if "a.jp" in u else good_feed):
+                scrape.main(ws)
+            self.assertEqual(scrape.urls_on_disk(ws / "raw" / "bob"), {"https://b.com/1"}, buf.getvalue())
+        self.assertIn("Jp: FAILED", buf.getvalue())
+
+
 class SubstackSkipRecord(unittest.TestCase):
     """A resume does not fetch teasers and short posts again; a lower min_words does."""
 
