@@ -10,7 +10,7 @@ Claudemy is a free Claude Code skill that builds the course you will actually fi
 
 ![Claudemy demo: type a topic, get 2-minute audio lessons, each with a card, one thing to try and a rule to keep](https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.gif)
 
-With sound:
+With sound (or [play it on the site](https://assafkip.github.io/claudemy/), no install needed):
 
 https://github.com/user-attachments/assets/d6447515-f442-4b77-a482-544d95dc4799
 
@@ -31,7 +31,7 @@ Listen for 2 minutes. Try one thing. Keep one rule.
 - **A card per lesson.** Three-line idea, source agreement, one practice, links to go deeper.
 - **A playbook.** One rule per lesson, collected in one file you keep.
 - **A lesson plan that shows where the experts split.** Laid out as decisions, not lessons.
-- **Real citations.** A checker refuses any lesson that cites a page the research did not actually read.
+- **Real citations.** A checker refuses any lesson that cites a page the research did not actually read. [How it works, and what it misses](https://assafkip.github.io/claudemy/blog/citation-checker.html).
 
 ## How it works
 
@@ -93,7 +93,7 @@ Yes. Name them in the request. Claudemy finds their Substack or blog and builds 
 
 ## Who built it
 
-Built by Assaf Kipnis. More of my work: [askconsulting.io](https://askconsulting.io)
+Built by Assaf Kipnis. I run ASK Consulting, a fractional Trust & Safety and fraud intelligence practice. More of my work: [askconsulting.io](https://askconsulting.io/?utm_source=claudemy&utm_medium=referral&utm_campaign=readme)
 
 ## License
 

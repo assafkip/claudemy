@@ -19,7 +19,7 @@ Key facts:
 - [Lesson example](https://github.com/assafkip/claudemy/blob/main/skills/claudemy/references/lesson-example.md): a complete lesson script and card
 
 ## Optional
-- [Release v0.2.0](https://github.com/assafkip/claudemy/releases/tag/v0.2.0)
+- [Latest release](https://github.com/assafkip/claudemy/releases/latest)
 - [Demo GIF](https://raw.githubusercontent.com/assafkip/claudemy/assets/claudemy-demo.gif): typing "teach me negotiation" and getting 2-minute lessons
 - [Packaged skill](https://github.com/assafkip/claudemy/releases/latest/download/claudemy.skill)
 - [License (MIT)](https://github.com/assafkip/claudemy/blob/main/LICENSE)
