@@ -497,6 +497,25 @@ class CheckerLocale(unittest.TestCase):
         self.assertIn("ok   01-x", r.stdout, r.stdout + r.stderr)
 
 
+class CombineCardsLocale(unittest.TestCase):
+    """package_class.py combines cards written as UTF-8 too, same as check_lessons.py
+    reads raw/, so that must not depend on the locale either."""
+
+    def test_non_utf8_locale(self):
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td)
+            lesson = ws / "class" / "01-x"
+            lesson.mkdir(parents=True)
+            (lesson / "card.md").write_text("**Listen:** x.mp3\nИван café\n", encoding="utf-8")
+            env = dict(os.environ, LC_ALL="ru_RU.CP1251", PYTHONUTF8="0")
+            r = subprocess.run([sys.executable, str(SCRIPTS / "package_class.py"), str(ws)], env=env,
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertNotIn("UnicodeDecodeError", r.stderr, r.stdout + r.stderr)
+            combined = (ws / "deliver" / "cards.md").read_text(encoding="utf-8")
+        self.assertIn("Иван café", combined)
+
+
 class KeyHookEdges(unittest.TestCase):
     """The newest key wins, and a foreign byte in the env file never crashes the hook."""
 
