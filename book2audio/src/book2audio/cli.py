@@ -49,7 +49,7 @@ def run(args) -> int:
     src = Path(args.input)
     if not src.is_file():
         raise B2AError(f"no such file: {src}")
-    price = float(args.price_per_1k) if args.price_per_1k is not None else None
+    price = args.price_per_1k
 
     job = pipeline.Job(args.job_dir or src.parent / f"{src.stem}.b2a", src)
     book = pipeline.load_book(src, job)
@@ -95,6 +95,9 @@ def run(args) -> int:
 
 
 def main(argv=None) -> int:
+    for stream in (sys.stdout, sys.stderr):  # a redirected Windows console can't print every title character
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
     args = parser().parse_args(argv)
     try:
         return run(args)

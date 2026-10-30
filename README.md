@@ -1,3 +1,18 @@
+# chillbook
+
+A fork of [Claudemy](https://github.com/assafkip/claudemy) by Assaf Kipnis (MIT) that adds **book2audio**: a command-line tool that turns an `.epub` or `.pdf` book into a chaptered `.m4b` audiobook, using a free local voice (Piper) or ElevenLabs. The original Claudemy skill is unchanged and described further down.
+
+```bash
+winget install Gyan.FFmpeg          # or: brew install ffmpeg
+pip install ./book2audio
+book2audio mybook.epub --dry-run    # chapters, size, time and cost; nothing is synthesized
+book2audio mybook.epub              # writes mybook.m4b with a free local voice
+```
+
+**Your text leaves your computer with cloud services.** With `--backend elevenlabs` the book's text is sent to ElevenLabs; with `--llm` it is sent to Anthropic. The free `piper` backend stays local. Full install steps, options, limits and credits: [book2audio/README.md](book2audio/README.md).
+
+---
+
 # Claudemy: an open-source alternative to Udemy and Coursera
 
 You wanted to learn negotiation. You got a 40-hour course, a syllabus someone wrote years ago, and a tab you never reopened.
