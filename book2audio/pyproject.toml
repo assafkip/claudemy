@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "book2audio"
+version = "0.1.0"
+description = "Convert EPUB and PDF books into chaptered M4B audiobooks"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "pdfminer.six>=20231228",
+    "pypdf>=4.0",
+]
+
+[project.optional-dependencies]
+# piper-tts is GPL-3.0-or-later. book2audio only runs it as a separate process, never imports it.
+piper = ["piper-tts"]
+# reportlab builds the PDF test fixture (tests/make_pdf_fixture.py); the tests themselves do not need it.
+dev = ["reportlab"]
+
+[project.scripts]
+book2audio = "book2audio.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
