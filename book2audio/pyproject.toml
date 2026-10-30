@@ -19,7 +19,8 @@ dependencies = [
 # piper-tts is GPL-3.0-or-later. book2audio only runs it as a separate process, never imports it.
 piper = ["piper-tts"]
 # reportlab builds the PDF test fixture (tests/make_pdf_fixture.py); the tests themselves do not need it.
-dev = ["reportlab"]
+dev = ["reportlab", "anthropic"]
+llm = ["anthropic"]
 
 [project.scripts]
 book2audio = "book2audio.cli:main"
