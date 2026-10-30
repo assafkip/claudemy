@@ -9,7 +9,7 @@ book2audio mybook.epub --dry-run    # chapters, size, time and cost; nothing is 
 book2audio mybook.epub              # writes mybook.m4b with a free local voice
 ```
 
-**Your text leaves your computer with cloud services.** With `--backend elevenlabs` the book's text is sent to ElevenLabs; with `--llm` it is sent to Anthropic. The free `piper` backend stays local. Full install steps, options, limits and credits: [book2audio/README.md](book2audio/README.md).
+**Your text leaves your computer with cloud services.** With `--backend elevenlabs` the book's text is sent to ElevenLabs; with `--backend google` (Chirp 3 HD voices) it is sent to Google Cloud; with `--llm` it is sent to Anthropic. The free `piper` backend stays local. Full install steps, options, limits and credits: [book2audio/README.md](book2audio/README.md).
 
 ---
 

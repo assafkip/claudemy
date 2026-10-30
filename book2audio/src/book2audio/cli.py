@@ -22,7 +22,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--yes", action="store_true", help="confirm a paid run (ElevenLabs, or --llm) after reading "
                                                       "the estimate")
     p.add_argument("--backend", choices=list(BACKENDS), default="piper", help="voice engine (default: piper, free)")
-    p.add_argument("--voice", help="voice id (elevenlabs), voice name or .onnx path (piper), voice name (say)")
+    p.add_argument("--voice", help="voice id (elevenlabs), voice name or .onnx path (piper), voice name (say), e.g. en-US-Chirp3-HD-Charon (google)")
     p.add_argument("--model", help="ElevenLabs model id (default: eleven_multilingual_v2)")
     p.add_argument("--mode", choices=["faithful", "adapted"], default="faithful",
                    help="faithful: read the text as written (default). adapted: Claude rewrites it as narration "
@@ -36,7 +36,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--title", help="override the book title")
     p.add_argument("--author", help="override the author")
     p.add_argument("--price-per-1k", type=float, default=os.environ.get("BOOK2AUDIO_PRICE_PER_1K"),
-                   help="your price for 1,000 ElevenLabs credits, to show money in the estimate")
+                   help="your price for 1,000 ElevenLabs credits or Google characters, to show money in the estimate")
     p.add_argument("--version", action="version", version=f"book2audio {__version__}")
     return p
 

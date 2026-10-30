@@ -11,8 +11,8 @@ from .pipeline import Job, Prepared
 from .tts import BACKENDS, Backend, cache_path, make_backend
 
 CHARS_PER_AUDIO_MINUTE = 900
-SYNTH_CHARS_PER_MINUTE = {"elevenlabs": 12000, "piper": 9000, "say": 15000}  # rough guesses, see module doc
-PRIVACY = {"elevenlabs": "ElevenLabs (cloud)", "piper": None, "say": None}
+SYNTH_CHARS_PER_MINUTE = {"elevenlabs": 12000, "piper": 9000, "say": 15000, "google": 12000}  # rough guesses, see module doc
+PRIVACY = {"elevenlabs": "ElevenLabs (cloud)", "google": "Google Cloud (cloud)", "piper": None, "say": None}
 
 
 def hm(minutes: float) -> str:
@@ -44,7 +44,7 @@ def report(book, prepared: list[Prepared], skipped, job: Job, backend: Backend, 
         mark = " <- selected" if name == backend.name else ""
         if b.paid:
             credits = todo * b.credit_per_char
-            cost = f"{credits:,.0f} credits" + (f" = {credits / 1000 * price_per_1k:,.2f} at {price_per_1k} per 1,000"
+            cost = f"{credits:,.0f} {b.unit}" + (f" = {credits / 1000 * price_per_1k:,.2f} at {price_per_1k} per 1,000"
                                                if price_per_1k is not None else " (add --price-per-1k to see money)")
         else:
             cost = "free" + (" (macOS only)" if name == "say" else " (local)")

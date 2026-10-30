@@ -9,9 +9,11 @@ Every backend turns one chunk of text into audio bytes. synth_cached() stores th
 a hash of (backend, voice, model, settings, text), so an interrupted run resumes where it
 stopped and a re-run never pays for the same chunk twice.
 """
+import base64
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -31,12 +33,34 @@ CHUNK_CHARS = 2500  # long enough for good prosody, short enough that a failed c
 DEFAULT_ELEVENLABS_VOICE = "TX3LPaxmHKxFdv7VOQHJ"
 
 
+def _http(req, service: str) -> bytes:
+    """POST with three tries on transient errors; failures show the service's own message (never the key)."""
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=300) as r:
+                return r.read()
+        except urllib.error.HTTPError as e:
+            # "HTTP Error 401" alone hides the cause (bad key, quota, unknown voice id); the body says which.
+            detail = e.read().decode("utf-8", "replace").strip()[:300]
+            if e.code in (429, 500, 502, 503, 504) and attempt < 2:
+                time.sleep(4 ** attempt)
+                continue
+            raise B2AError(f"{service} refused the request: HTTP {e.code} {e.reason}. {detail}")
+        except (urllib.error.URLError, TimeoutError) as e:
+            if attempt < 2:
+                time.sleep(4 ** attempt)
+                continue
+            raise B2AError(f"could not reach {service}: {e}")
+
+
 class Backend:
     name = ""
     ext = "wav"
     paid = False
     max_chars = 3000
     voice = ""
+    unit = "credits"  # what a paid backend bills in; the dry run shows it
+    credit_per_char = 1.0
 
     def check(self):
         """Raise B2AError if this backend cannot run (missing key, program or voice)."""
@@ -84,22 +108,7 @@ class ElevenLabs(Backend):
             data=json.dumps(body).encode(),
             headers={"xi-api-key": os.environ.get("ELEVENLABS_API_KEY", ""), "Content-Type": "application/json",
                      "Accept": "audio/mpeg"})
-        for attempt in range(3):
-            try:
-                with urllib.request.urlopen(req, timeout=300) as r:
-                    return r.read()
-            except urllib.error.HTTPError as e:
-                # "HTTP Error 401" alone hides the cause (bad key, quota, unknown voice id); the body says which.
-                detail = e.read().decode("utf-8", "replace").strip()[:300]
-                if e.code in (429, 500, 502, 503, 504) and attempt < 2:
-                    time.sleep(4 ** attempt)
-                    continue
-                raise B2AError(f"ElevenLabs refused the request: HTTP {e.code} {e.reason}. {detail}")
-            except (urllib.error.URLError, TimeoutError) as e:
-                if attempt < 2:
-                    time.sleep(4 ** attempt)
-                    continue
-                raise B2AError(f"could not reach ElevenLabs: {e}")
+        return _http(req, "ElevenLabs")
 
 
 class Piper(Backend):
@@ -156,7 +165,67 @@ class Say(Backend):
             return out.read_bytes()
 
 
-BACKENDS = {"elevenlabs": ElevenLabs, "piper": Piper, "say": Say}
+class GoogleChirp3(Backend):
+    """Google Cloud Text-to-Speech, Chirp 3: HD voices (https://docs.cloud.google.com/text-to-speech/docs/chirp3-hd).
+
+    One request to POST /v1/text:synthesize returns base64 MP3. A request may carry at most 5,000 bytes of
+    input (SynthesisInput docs), so chunks stay at 1,500 characters: under that even if every character is
+    a 3-byte one. Billing is per character; it is not known here, so pass --price-per-1k to see money.
+
+    Auth: GOOGLE_TTS_API_KEY if set (sent as the x-goog-api-key header; Google's own examples use a gcloud
+    token instead, so an API key is the less documented path). Otherwise `gcloud auth print-access-token`,
+    with GOOGLE_CLOUD_PROJECT as the quota project when set.
+    """
+    name = "google"
+    ext = "mp3"
+    paid = True
+    unit = "characters"
+    max_chars = 1500
+    URL = "https://texttospeech.googleapis.com/v1/text:synthesize"
+    VOICE = re.compile(r"^([a-z]{2,3})-([A-Za-z]{2,4})-Chirp3-HD-[A-Za-z]+$", re.I)
+
+    def __init__(self, voice=None, model=None):
+        self.voice = voice or "en-US-Chirp3-HD-Charon"
+        m = self.VOICE.match(self.voice)
+        if not m:
+            raise B2AError(f"{self.voice!r} is not a Chirp 3 HD voice name; use the form en-US-Chirp3-HD-Charon "
+                           "(language-REGION-Chirp3-HD-Name)")
+        self.language = f"{m.group(1).lower()}-{m.group(2).upper()}"  # "en-us" -> "en-US"
+        self._token, self._token_at = None, 0.0
+
+    def check(self):
+        if not os.environ.get("GOOGLE_TTS_API_KEY") and not shutil.which("gcloud"):
+            raise B2AError("no Google credentials. Either set GOOGLE_TTS_API_KEY (an API key restricted to the "
+                           "Cloud Text-to-Speech API) in your environment, or install the gcloud CLI and run "
+                           "`gcloud auth login`.")
+
+    def _auth(self) -> dict:
+        key = os.environ.get("GOOGLE_TTS_API_KEY")
+        if key:
+            return {"x-goog-api-key": key}
+        if not self._token or time.monotonic() - self._token_at > 1800:  # tokens last an hour
+            r = subprocess.run([shutil.which("gcloud") or "gcloud", "auth", "print-access-token"],
+                               capture_output=True, text=True)
+            if r.returncode or not r.stdout.strip():
+                raise B2AError(f"gcloud gave no access token ({r.stderr.strip()[-200:]}); run: gcloud auth login")
+            self._token, self._token_at = r.stdout.strip(), time.monotonic()
+        headers = {"Authorization": f"Bearer {self._token}"}
+        if os.environ.get("GOOGLE_CLOUD_PROJECT"):
+            headers["x-goog-user-project"] = os.environ["GOOGLE_CLOUD_PROJECT"]
+        return headers
+
+    def synth(self, text, before="", after=""):
+        body = {"input": {"text": text}, "voice": {"languageCode": self.language, "name": self.voice},
+                "audioConfig": {"audioEncoding": "MP3"}}
+        req = urllib.request.Request(self.URL, data=json.dumps(body).encode(),
+                                     headers={"Content-Type": "application/json", **self._auth()})
+        try:
+            return base64.b64decode(json.loads(_http(req, "Google Text-to-Speech"))["audioContent"])
+        except (ValueError, KeyError):
+            raise B2AError("Google Text-to-Speech answered without audio")
+
+
+BACKENDS = {"elevenlabs": ElevenLabs, "piper": Piper, "say": Say, "google": GoogleChirp3}
 
 
 def make_backend(name, voice=None, model=None) -> Backend:

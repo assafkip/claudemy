@@ -1,6 +1,6 @@
 # book2audio
 
-Turn an **.epub** or **.pdf** book into a chaptered **.m4b** audiobook, with a free local voice or ElevenLabs.
+Turn an **.epub** or **.pdf** book into a chaptered **.m4b** audiobook, with a free local voice, ElevenLabs or Google Chirp 3 HD.
 
 ```
 book2audio mybook.epub --dry-run        # chapters, size, time and cost; spends nothing
@@ -26,6 +26,7 @@ Pick a voice engine (you need at least one):
 |---|---|---|
 | `piper` (default) | free, runs on your computer | `pip install piper-tts`, then `python -m piper.download_voices en_US-lessac-medium` in the folder you run from (or set `PIPER_DATA_DIR`) |
 | `elevenlabs` | paid, cloud | an API key in the `ELEVENLABS_API_KEY` environment variable |
+| `google` | paid, cloud (Google Cloud Text-to-Speech, Chirp 3 HD voices) | `GOOGLE_TTS_API_KEY` set to an API key allowed to call the Text-to-Speech API, or the `gcloud` CLI logged in with `gcloud auth login` |
 | `say` | free, macOS only | nothing |
 
 Optional extras:
@@ -62,7 +63,28 @@ book2audio mybook.epub --chapters 1 --backend elevenlabs --yes   # try one chapt
 book2audio mybook.pdf  --backend elevenlabs --voice <voice id> --yes
 ```
 
-A paid run (ElevenLabs, or `--llm`) prints the same estimate and then stops until you repeat the command with `--yes`.
+A paid run (ElevenLabs, Google, or `--llm`) prints the same estimate and then stops until you repeat the command with `--yes`.
+
+### Hear a Google Chirp 3 HD sample first
+
+[examples/chirp3_sample.py](examples/chirp3_sample.py) asks Google for one short sample and saves it as an MP3. It needs only Python and your credentials, so it is also the quickest check that the Text-to-Speech API is switched on for your project. A sample is about 100 characters.
+
+```powershell
+$env:GOOGLE_TTS_API_KEY = "your-key"     # or: gcloud auth login
+python examples\chirp3_sample.py                                          # default voice: Charon
+python examples\chirp3_sample.py --voice en-US-Chirp3-HD-Leda --voice en-US-Chirp3-HD-Kore
+python examples\chirp3_sample.py --list                                   # the 30 voice names
+python examples\chirp3_sample.py "Any text you would like to hear."
+```
+
+Then use the voice you like for the book:
+
+```powershell
+book2audio mybook.epub --backend google --voice en-US-Chirp3-HD-Leda --dry-run --price-per-1k 0.03
+book2audio mybook.epub --backend google --voice en-US-Chirp3-HD-Leda --chapters 1 --yes
+```
+
+`--price-per-1k` is what 1,000 characters cost you. Check Google's [pricing page](https://cloud.google.com/text-to-speech/pricing) for the current Chirp 3 HD rate and free allowance; the number above is only an example.
 
 ### Options
 
@@ -94,6 +116,7 @@ Everything a run makes goes in the job folder, and each piece is named by a hash
 ## Your text leaves your computer with cloud services
 
 - **`--backend elevenlabs`** sends the full text of the book, in chunks, to ElevenLabs to make the audio.
+- **`--backend google`** sends the full text of the book, in chunks, to Google Cloud Text-to-Speech.
 - **`--llm`** sends the full text of the book, in segments, to Anthropic.
 - `piper` and `say` run on your computer and send nothing anywhere.
 
@@ -104,7 +127,8 @@ The dry run states which of these apply to your command. Only use a cloud servic
 - English only. The number and abbreviation rules assume English, and the default voices are English.
 - Synthesis is one chunk at a time. Time estimates are rough guesses; run `--chapters 1` to calibrate.
 - PDF layout is heuristic. Multi-column pages, tables printed as text, small-print captions low on a page (read as footnotes), and compounds hyphenated at a line end ("well-known" becomes "wellknown") can come out wrong. Check the dry run's chapter list and listen to one chapter first.
-- Piper and ElevenLabs are driven the way their documentation describes, but this repository's tests use fakes for them. The first real run is the first live test.
+- Piper, ElevenLabs and Google are driven the way their documentation describes, but this repository's tests use fakes for them. The first real run is the first live test.
+- Google Chirp 3 HD: a request may hold at most 5,000 bytes, so chunks are 1,500 characters. Google's own examples authenticate with a `gcloud` access token; an API key is also supported here but Google's documentation does not describe it for this API, so if the key is rejected use `gcloud auth login`. The default voice is English.
 - ElevenLabs credit counts are 1 per character (half for the Flash and Turbo models). Your plan decides the price, which is why it is an option and not built in.
 
 ## Tests
