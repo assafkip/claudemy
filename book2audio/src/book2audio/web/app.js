@@ -264,7 +264,7 @@ async function installVoice(name) {
 
 function keyBox(provider) {
   const k = S.keys[provider] || {}, name = {google: 'Google', elevenlabs: 'ElevenLabs', anthropic: 'Anthropic'}[provider];
-  if (k.has || (provider === 'google' && S.keys.gcloud)) {
+  if (k.has) {  // gcloud on the PATH does not mean signed in, so it never hides the key box
     return h('div', {class: 'keybox'},
       h('span', {class: 'badge local'}, k.typed ? `✓ ${name} key added (kept in memory only)` :
         k.environment ? `✓ ${name} key found on this computer` : '✓ Signed in with the gcloud tool'),
@@ -275,7 +275,8 @@ function keyBox(provider) {
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') use(); });
   return h('div', {},
     h('div', {class: 'keybox'}, input, h('button', {type: 'button', onclick: use}, 'Use this key')),
-    h('p', {class: 'help'}, `${KEY_HELP[provider]} The key is kept only while this program runs: it is never saved to a file or shown again.`),
+    h('p', {class: 'help'}, `${KEY_HELP[provider]} The key is kept only while this program runs: it is never saved to a file or shown again.` +
+      (provider === 'google' && S.keys.gcloud ? ' Without a key, Book2Audio uses the gcloud tool on this computer, which must be signed in first (run "gcloud auth login" in a terminal).' : '')),
     S.keyError && S.keyError.p === provider ? h('div', {class: 'msg bad'}, S.keyError.m) : null);
 }
 async function setKey(provider, key, input) {
