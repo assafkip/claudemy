@@ -7,6 +7,10 @@ class B2AError(Exception):
     """A problem the user can act on; the CLI prints the message without a traceback."""
 
 
+class Cancelled(Exception):
+    """Raised inside a run when the caller asked it to stop; finished work stays in the job folder."""
+
+
 @dataclass
 class Chapter:
     title: str

@@ -53,14 +53,14 @@ def estimate(chars: int, mode: str, condense: bool, model: str) -> dict:
     return {"requests": segments, "tokens_in": tokens_in, "tokens_out": tokens_out, "usd": cost}
 
 
-def make_client():
+def make_client(api_key=None):
     try:
         import anthropic
     except ImportError:
         raise B2AError("the Claude pass needs the Anthropic SDK: pip install anthropic  "
                        "(or pip install 'book2audio[llm]')")
     try:
-        return anthropic.Anthropic()  # reads ANTHROPIC_API_KEY (or a logged-in profile)
+        return anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()  # else ANTHROPIC_API_KEY / a logged-in profile
     except Exception as e:  # missing credentials raise here
         raise B2AError(f"cannot start the Anthropic client ({e}). Set ANTHROPIC_API_KEY in your environment.")
 

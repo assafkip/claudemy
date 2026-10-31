@@ -61,6 +61,7 @@ class Backend:
     voice = ""
     unit = "credits"  # what a paid backend bills in; the dry run shows it
     credit_per_char = 1.0
+    api_key = None    # a key held in memory by the caller (the web page); the environment variable is the fallback
 
     def check(self):
         """Raise B2AError if this backend cannot run (missing key, program or voice)."""
@@ -91,8 +92,11 @@ class ElevenLabs(Backend):
     def fingerprint(self):
         return f"{self.voice}|{self.model}|{self.STABILITY}"
 
+    def _key(self) -> str:
+        return self.api_key or os.environ.get("ELEVENLABS_API_KEY", "")
+
     def check(self):
-        if not os.environ.get("ELEVENLABS_API_KEY"):
+        if not self._key():
             raise B2AError("ELEVENLABS_API_KEY is not set. Set it in your environment (never in a file in this "
                            "project); or use --backend piper for a free local voice.")
 
@@ -106,7 +110,7 @@ class ElevenLabs(Backend):
         req = urllib.request.Request(
             f"https://api.elevenlabs.io/v1/text-to-speech/{self.voice}?output_format=mp3_44100_128",
             data=json.dumps(body).encode(),
-            headers={"xi-api-key": os.environ.get("ELEVENLABS_API_KEY", ""), "Content-Type": "application/json",
+            headers={"xi-api-key": self._key(), "Content-Type": "application/json",
                      "Accept": "audio/mpeg"})
         return _http(req, "ElevenLabs")
 
@@ -194,13 +198,13 @@ class GoogleChirp3(Backend):
         self._token, self._token_at = None, 0.0
 
     def check(self):
-        if not os.environ.get("GOOGLE_TTS_API_KEY") and not shutil.which("gcloud"):
+        if not self.api_key and not os.environ.get("GOOGLE_TTS_API_KEY") and not shutil.which("gcloud"):
             raise B2AError("no Google credentials. Either set GOOGLE_TTS_API_KEY (an API key restricted to the "
                            "Cloud Text-to-Speech API) in your environment, or install the gcloud CLI and run "
                            "`gcloud auth login`.")
 
     def _auth(self) -> dict:
-        key = os.environ.get("GOOGLE_TTS_API_KEY")
+        key = self.api_key or os.environ.get("GOOGLE_TTS_API_KEY")
         if key:
             return {"x-goog-api-key": key}
         if not self._token or time.monotonic() - self._token_at > 1800:  # tokens last an hour
@@ -228,10 +232,12 @@ class GoogleChirp3(Backend):
 BACKENDS = {"elevenlabs": ElevenLabs, "piper": Piper, "say": Say, "google": GoogleChirp3}
 
 
-def make_backend(name, voice=None, model=None) -> Backend:
+def make_backend(name, voice=None, model=None, api_key=None) -> Backend:
     if name not in BACKENDS:
         raise B2AError(f"unknown backend {name!r}; choose from {', '.join(BACKENDS)}")
-    return BACKENDS[name](voice, model)
+    backend = BACKENDS[name](voice, model)
+    backend.api_key = api_key or None
+    return backend
 
 
 def cache_key(backend: Backend, text: str) -> str:

@@ -14,7 +14,8 @@ COVER_TYPES = {".jpg": "jpg", ".jpeg": "jpg", ".png": "png"}
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="book2audio", description="Convert an .epub or .pdf book into a chaptered "
                                 ".m4b audiobook. Run with --dry-run first: it shows chapters, size, time and cost "
-                                "and synthesizes nothing.")
+                                "and synthesizes nothing. Run `book2audio ui` instead for the visual interface in "
+                                "your browser.")
     p.add_argument("input", help="the .epub or .pdf file")
     p.add_argument("-o", "--output", help="output .m4b (default: next to the input)")
     p.add_argument("--job-dir", help="working folder; run the same command again to resume (default: <input>.b2a)")
@@ -84,12 +85,8 @@ def run(args) -> int:
               "--yes to start.", file=sys.stderr)
         return 3
 
-    if llm_opts:
-        prepared = pipeline.prepare(picks, job, llm_opts)
-    files = pipeline.synthesize(prepared, backend, job)
     out = Path(args.output) if args.output else src.with_suffix(".m4b")
-    seconds = assemble.build_m4b(files, [p.title for p in prepared], out, book.title, book.author,
-                                 book.cover, book.cover_ext, work=job.m4b)
+    seconds = pipeline.convert(book, picks, backend, job, out, llm_opts)
     print(f"\nWrote {out} ({estimate.hm(seconds / 60)}, {len(prepared)} chapters)")
     return 0
 
@@ -98,6 +95,10 @@ def main(argv=None) -> int:
     for stream in (sys.stdout, sys.stderr):  # a redirected Windows console can't print every title character
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(errors="replace")
+    argv = sys.argv[1:] if argv is None else list(argv)
+    if argv[:1] == ["ui"]:  # `book2audio ui`: the visual interface (a file literally named "ui" needs ./ui)
+        from . import ui
+        return ui.main(argv[1:])
     args = parser().parse_args(argv)
     try:
         return run(args)
