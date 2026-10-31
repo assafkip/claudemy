@@ -3,6 +3,7 @@
 Turn an **.epub** or **.pdf** book into a chaptered **.m4b** audiobook, with a free local voice, ElevenLabs or Google Chirp 3 HD.
 
 ```
+book2audio ui                           # the visual interface, in your browser (easiest)
 book2audio mybook.epub --dry-run        # chapters, size, time and cost; spends nothing
 book2audio mybook.epub                  # free local voice (Piper); writes mybook.m4b
 ```
@@ -35,6 +36,29 @@ Optional extras:
 - `ocrmypdf` plus the tesseract program, to read scanned PDFs.
 
 Set keys in your shell for the session (PowerShell: `$env:ELEVENLABS_API_KEY = "..."`). They are only ever read from the environment: never written to disk, never printed, never committed. Do not put them in a file in this folder.
+
+## The visual interface
+
+No terminal needed after the install. Start it with a double-click:
+
+- **Windows:** double-click `Start Book2Audio.bat` (in this folder).
+- **macOS:** double-click `Start Book2Audio.command`. The first time, right-click it and choose Open (macOS warns about files from the internet). If it says it cannot be opened, run `chmod +x "Start Book2Audio.command"` once in Terminal.
+- **Anywhere:** `book2audio ui` (add `--no-browser` to only print the link).
+
+A black window opens and your browser shows the Book2Audio page. Keep the black window open while you use it; "Close Book2Audio" on the page, or closing the window, stops it. Then:
+
+1. Drop an `.epub` or `.pdf`. You see the title, author, cover and chapters; front and back matter is unticked with the reason.
+2. Pick chapters and a voice. The ▶ **Sample** button next to each voice reads a few sentences from the start of your own book. A paid sample shows its cost first, and a sample you already heard is saved, so replaying it is free.
+3. The **Summary** card updates as you choose: engine and voice, **where your text goes** (this computer, ElevenLabs, Google Cloud or Anthropic), characters, audiobook length, a rough time, and the cost. Enter your price per 1,000 credits or characters once per provider; it is remembered on this computer.
+4. **Convert to audiobook.** A paid voice (or the Claude clean-up) asks for one more click that shows the cost; the free voices start straight away. You see progress per chapter, can **Stop** at any time, and press Convert again to continue where it left off (also after closing the page or restarting the program: drop the same book again and finished parts are reused). When it is done: **Show in folder** or **Download the .m4b**.
+
+The page has a **Get ready** checklist at the top: it checks ffmpeg, Piper and your keys and gives a short copy-and-paste fix for what is missing. It can download a free Piper voice for you (about 60 MB each, from the Piper voice library; nothing from your book is sent).
+
+What it keeps on your computer, in `%LOCALAPPDATA%\book2audio` (Windows), `~/Library/Application Support/book2audio` (macOS) or `~/.local/share/book2audio`; set `BOOK2AUDIO_HOME` to move it: your prices and last choices (`settings.json`, never keys), the books you dropped, the working folders (resume data) and saved voice samples. Finished audiobooks go to `Music/book2audio` in your home folder (or `BOOK2AUDIO_OUT`).
+
+**Keys** (ElevenLabs, Google, Anthropic) are typed into the page and kept in the program's memory only: never written to a file, the log or the browser, never shown again, and gone when you close the program. Keys already set as `ELEVENLABS_API_KEY`, `GOOGLE_TTS_API_KEY` or `ANTHROPIC_API_KEY` are used too.
+
+**Safety.** The page is served only to your own computer (127.0.0.1, on a free port). Every request must carry a random code created at start-up, and requests from other websites are refused, so a web page you happen to visit cannot start a paid job. Nothing is hosted anywhere.
 
 ## Use
 
@@ -120,14 +144,15 @@ Everything a run makes goes in the job folder, and each piece is named by a hash
 - **`--llm`** sends the full text of the book, in segments, to Anthropic.
 - `piper` and `say` run on your computer and send nothing anywhere.
 
-The dry run states which of these apply to your command. Only use a cloud service for books you are allowed to send to it. Check the provider's terms on retention and on copyrighted works.
+The dry run states which of these apply to your command, and the visual interface shows the same notice, in a box, wherever a cloud voice or the Claude clean-up is chosen. Only use a cloud service for books you are allowed to send to it. Check the provider's terms on retention and on copyrighted works.
 
 ## Known limits
 
 - English only. The number and abbreviation rules assume English, and the default voices are English.
 - Synthesis is one chunk at a time. Time estimates are rough guesses; run `--chapters 1` to calibrate.
 - PDF layout is heuristic. Multi-column pages, tables printed as text, small-print captions low on a page (read as footnotes), and compounds hyphenated at a line end ("well-known" becomes "wellknown") can come out wrong. Check the dry run's chapter list and listen to one chapter first.
-- Piper, ElevenLabs and Google are driven the way their documentation describes, but this repository's tests use fakes for them. The first real run is the first live test.
+- Piper, ElevenLabs and Google are driven the way their documentation describes, but this repository's tests use fakes for them. The first real run is the first live test. The same goes for the visual interface's ElevenLabs voice list, the Piper voice download and the macOS voice list.
+- The visual interface runs one conversion at a time, shows prices in US dollars (what the providers bill in), and offers the Google Chirp 3 HD voices in a handful of languages; the number and abbreviation rules are still English.
 - Google Chirp 3 HD: a request may hold at most 5,000 bytes, so chunks are 1,500 characters. Google's own examples authenticate with a `gcloud` access token; an API key is also supported here but Google's documentation does not describe it for this API, so if the key is rejected use `gcloud auth login`. The default voice is English.
 - ElevenLabs credit counts are 1 per character (half for the Flash and Turbo models). Your plan decides the price, which is why it is an option and not built in.
 
@@ -137,6 +162,8 @@ The dry run states which of these apply to your command. Only use a cloud servic
 pip install "./book2audio[dev]"
 cd book2audio && python -m unittest discover -s tests
 ```
+
+The visual interface is tested through a real server on a free port with fake voice engines (`tests/test_ui.py`, `tests/test_voices.py`): no network, no paid calls.
 
 The tests use Project Gutenberg #11 (*Alice's Adventures in Wonderland*, public domain) and need ffmpeg for the assembly and end-to-end tests (they are skipped without it). `tests/make_pdf_fixture.py` rebuilds the PDF fixture. No copyrighted books are used.
 
