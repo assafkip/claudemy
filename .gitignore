@@ -6,3 +6,5 @@ claudemy-workspace/
 build/
 *.m4b
 *.b2a/
+chirp3-*.mp3
+eleven-sample.mp3
