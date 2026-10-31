@@ -27,3 +27,6 @@ book2audio = "book2audio.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+book2audio = ["web/*"]
