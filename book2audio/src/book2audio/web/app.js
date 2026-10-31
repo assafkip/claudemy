@@ -3,6 +3,7 @@
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
 const $ = (id) => document.getElementById(id);
 const CLOUD = {google: 'Google Cloud', elevenlabs: 'ElevenLabs'};
+const PROVIDER = {google: 'Google', elevenlabs: 'ElevenLabs', anthropic: 'Anthropic'};
 const KEY_HELP = {
   google: 'In the Google Cloud console, create an API key that is allowed to use "Cloud Text-to-Speech".',
   elevenlabs: 'On elevenlabs.io open your profile, then "API keys", and create one.',
@@ -134,7 +135,7 @@ async function estimate() {
 }
 
 // ---------------------------------------------------------------------------------------------- rendering
-function renderAll() { renderSetup(); renderBook(); renderChapters(); renderVoice(); renderClaude(); renderSummary(); }
+function renderAll() { renderSetup(); renderBook(); renderChapters(); renderVoice(); renderClaude(); renderPrice(); renderSummary(); }
 
 function renderSetup() {
   const body = $('setup-body'), chip = $('chip');
@@ -194,6 +195,7 @@ function countChapters() {
   $('chapter-count').textContent = `${S.picked.size} of ${S.book.chapters.length} chapters ticked`;
 }
 
+let priceFor = null;
 function renderVoice() {
   const cat = S.cat;
   fill($('engines'), S.engines.map((e) => h('label', {class: 'engine'},
@@ -213,6 +215,7 @@ function renderVoice() {
     fill($('local-note'), '✓ Your book stays on this computer. Nothing is sent anywhere.');
   }
   fill($('keybox'), cloud ? keyBox(S.engine) : null);
+  if (priceFor !== S.engine) { priceFor = S.engine; renderPrice(); }
   if (!cat) return;
   $('model-field').hidden = !cat.models.length;
   fill($('model'), cat.models.map((m) => h('option', {value: m.id, selected: m.id === S.model}, m.label)));
@@ -337,25 +340,43 @@ function renderSample() {
 function replay() { stopAudio(); return playSample(); }
 
 // ---------------------------------------------------------------------------------------------- summary and convert
+// The summary has fixed slots so that typing in the price box is never interrupted by an update:
+// #sum-card and #sum-after are redrawn on every change, #sum-price only when the engine changes.
 function renderSummary() {
-  const box = $('summary'), e = S.est, run = S.run;
-  const running = run.status === 'running';
-  if (!S.book) return fill(box, h('h2', {}, 'Summary'), h('p', {class: 'muted'}, 'Choose a book to see what it will cost, how long it will take and where your text goes.'));
-  const parts = [h('h2', {}, 'Summary')];
-  if (S.estError) parts.push(h('div', {class: 'msg bad'}, S.estError));
-  else if (!S.picked.size) parts.push(h('p', {class: 'muted'}, 'Tick at least one chapter.'));
-  else if (!S.voice) parts.push(h('p', {class: 'muted'}, 'Pick a voice.'));
-  else if (!e) parts.push(h('p', {class: 'muted'}, S.estBusy ? 'Working it out…' : ''));
-  else parts.push(...summaryCard(e));
-  const partial = e && e.cached_chars > 0 && e.todo_chars > 0;
-  const startable = e && !running && !S.starting && !e.missing_key;
-  parts.push(h('button', {type: 'button', class: 'primary big', disabled: !startable, onclick: convertClicked},
-    running ? 'Converting…' : partial ? 'Continue where you left off' : 'Convert to audiobook'));
-  if (e && e.missing_key && !running) parts.push(h('p', {class: 'help'}, `Add your ${{google: 'Google', elevenlabs: 'ElevenLabs', anthropic: 'Anthropic'}[e.missing_key]} key first.`));
-  if (S.startError) parts.push(h('div', {class: 'msg bad'}, S.startError));
-  parts.push(...runPanel());
-  fill(box, parts);
+  const e = S.est, running = S.run.status === 'running';
+  const card = [h('h2', {}, 'Summary')], after = [];
+  if (!S.book) card.push(h('p', {class: 'muted'}, 'Choose a book to see what it will cost, how long it will take and where your text goes.'));
+  else {
+    if (S.estError) card.push(h('div', {class: 'msg bad'}, S.estError));
+    else if (!S.picked.size) card.push(h('p', {class: 'muted'}, 'Tick at least one chapter.'));
+    else if (!S.voice) card.push(h('p', {class: 'muted'}, 'Pick a voice.'));
+    else if (!e) card.push(h('p', {class: 'muted'}, S.estBusy ? 'Working it out…' : ''));
+    else { const c = summaryCard(e); card.push(...c.card); after.push(...c.after); }
+    const partial = e && e.cached_chars > 0 && e.todo_chars > 0;
+    after.push(h('button', {type: 'button', class: 'primary big', disabled: !(e && !running && !S.starting && !e.missing_key), onclick: convertClicked},
+      running ? 'Converting…' : partial ? 'Continue where you left off' : 'Convert to audiobook'));
+    if (e && e.missing_key && !running) after.push(h('p', {class: 'help'}, `Add your ${PROVIDER[e.missing_key]} key first.`));
+    if (S.startError) after.push(h('div', {class: 'msg bad'}, S.startError));
+    after.push(...runPanel());
+  }
+  fill($('sum-card'), card);
+  fill($('sum-after'), after);
   renderRun();
+}
+
+function renderPrice() {
+  const unit = S.engine === 'elevenlabs' ? 'credits' : 'characters';
+  fill($('sum-price'), CLOUD[S.engine] ? [
+    h('div', {class: 'field'}, h('span', {}, `Your price in US dollars per 1,000 ${unit}`),
+      h('input', {type: 'text', inputmode: 'decimal', autocomplete: 'off', value: S.prices[S.engine] ?? '', style: 'width:8em', 'aria-label': `Price per 1,000 ${unit}`,
+        oninput: (ev) => {
+          const v = ev.target.value.trim().replace(',', '.'), n = Number(v);
+          ev.target.setAttribute('aria-invalid', v !== '' && !(Number.isFinite(n) && n >= 0) ? 'true' : 'false');
+          if (v === '') delete S.prices[S.engine]; else if (Number.isFinite(n) && n >= 0) S.prices[S.engine] = n; else return;
+          changed();
+          if (S.sample && S.sample.q && !S.sample.done) later('requote', 500, () => askSample(S.sample.voice));  // its cost line changed
+        }})),
+    h('p', {class: 'help'}, 'Your plan decides this. Look it up on the provider\'s pricing page. It is saved on this computer so you only type it once.')] : null);
 }
 
 function summaryCard(e) {
@@ -374,28 +395,17 @@ function summaryCard(e) {
   if (e.voice_paid) cost.push(`${fmt(e.units)} ${e.unit}` + (e.voice_money != null ? ` ≈ ${money(e.voice_money)}` : ''));
   if (e.claude) cost.push('Claude: ' + (e.claude.usd != null ? `about ${money(e.claude.usd)}` : 'price not known'));
   rows.push(['Cost', h('span', {}, ...cost.map((c) => h('div', {}, c)))]);
-  const out = [h('dl', {}, rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]))];
-  if (e.voice_paid) {
-    out.push(h('div', {class: 'field'}, h('span', {}, `Your price in US dollars per 1,000 ${e.unit}`),
-      h('input', {type: 'number', min: '0', step: 'any', value: S.prices[S.engine] ?? '', style: 'width:8em', 'aria-label': 'Price per 1,000',
-        oninput: (ev) => {
-          const v = ev.target.value;
-          if (v === '') delete S.prices[S.engine]; else S.prices[S.engine] = Number(v);
-          changed();
-          if (S.sample && S.sample.q && !S.sample.done) later('requote', 500, () => askSample(S.sample.voice));  // its cost line changed
-        }})),
-      h('p', {class: 'help'}, 'Your plan decides this. Look it up on the provider\'s pricing page. It is saved on this computer so you only type it once.'));
-    if (e.total_money != null) out.push(h('p', {}, h('strong', {}, `Total: about ${money(e.total_money)}`)));
-  }
-  if (e.sent_to.length) out.push(h('div', {class: 'notice'}, h('strong', {}, 'Your book\'s text will be sent to ' + e.sent_to.join(' and ') + '.')));
-  return out;
+  const after = [];
+  if (e.paid && e.total_money != null) after.push(h('p', {}, h('strong', {}, `Total: about ${money(e.total_money)}`)));
+  if (e.sent_to.length) after.push(h('div', {class: 'notice'}, h('strong', {}, 'Your book\'s text will be sent to ' + e.sent_to.join(' and ') + '.')));
+  return {card: [h('dl', {}, rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]))], after};
 }
 
 // What changes every second is drawn into #runinfo; the Stop button sits outside it, so a click never lands on a
 // node that was replaced a moment ago.
 function runPanel() {
   const r = S.run;
-  if (!r || r.status === 'idle') return [];
+  if (!r || r.status === 'idle' || (S.book && r.book !== S.book.id && r.status !== 'running')) return [];  // another book's result
   const out = [h('div', {id: 'runinfo'})];
   if (r.status === 'running') {
     out.push(h('button', {type: 'button', onclick: () => api('POST', '/api/cancel', {}).then((x) => { S.run = x.run; renderRun(); }).catch((e) => alert(e.message))}, 'Stop'));

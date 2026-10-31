@@ -399,6 +399,24 @@ class Conversion(Server):
         self.wait_for("done")
         self.assertTrue((self.dir / "out" / "Tiny Book.m4b").exists())
 
+    def test_the_claude_clean_up_needs_its_key_and_the_quote_and_its_text_is_what_is_voiced(self):
+        book = self.small_book()
+        claude = {"on": True, "mode": "faithful", "model": "claude-haiku-5-5", "condense": False}
+        req = {**self.request(book), "claude": claude}
+        est = self.api("POST", "/api/estimate", req)[1]
+        self.assertIn("Anthropic key", self.api("POST", "/api/convert", {**req, "quote": est["quote"]})[1]["error"])
+        self.api("POST", "/api/key", {"provider": "anthropic", "key": SECRET})
+        self.assertEqual(self.api("POST", "/api/convert", req)[0], 400, "no quote, no run")
+        client = mock.Mock()
+        client.messages.create.side_effect = lambda **kw: mock.Mock(
+            stop_reason="end_turn", content=[mock.Mock(type="text", text=kw["messages"][0]["content"].replace("lazy", "sleepy"))])
+        with mock.patch.object(ui.llm, "make_client", return_value=client) as make:
+            self.assertEqual(self.api("POST", "/api/convert", {**req, "quote": est["quote"]})[0], 200)
+            self.wait_for("done")
+        make.assert_called_once_with(SECRET)
+        self.assertGreater(client.messages.create.call_count, 0)
+        self.assertTrue(any("sleepy dog" in c for c in self.calls))
+
     def test_failures_are_plain_and_never_show_the_key(self):
         book = self.small_book()
         self.api("POST", "/api/key", {"provider": "google", "key": SECRET})
