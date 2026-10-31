@@ -1,1 +1,3 @@
-tests/fixtures/* binary
+# Launchers must keep their own line endings: a .bat needs CRLF, a .command needs LF.
+*.bat text eol=crlf
+*.command text eol=lf
