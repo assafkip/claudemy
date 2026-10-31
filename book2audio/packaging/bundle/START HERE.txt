@@ -1,0 +1,66 @@
+BOOK2AUDIO: turn an e-book into an audiobook
+=============================================
+
+Book2Audio opens a page in your web browser. You drop in an .epub or .pdf book, pick a voice, and it makes
+an audiobook (.m4b file) that you can play in any audiobook app. It runs on your own computer. Nothing is
+installed: this whole folder is the program.
+
+
+1. FIRST TIME ONLY: unzip it properly
+-------------------------------------
+- Right-click the zip file, choose Properties. If you see a box "Unblock" at the bottom, tick it and press OK.
+- Right-click the zip file again, choose "Extract All", and extract it to a normal folder such as Documents
+  or Desktop. (Do not run it from inside the zip, and do not put it in "Program Files".)
+
+
+2. Start it
+-----------
+- Open the folder and double-click  "Start Book2Audio.bat".
+- A black window opens and your browser shows the Book2Audio page. KEEP THE BLACK WINDOW OPEN while you work.
+- If Windows says "Windows protected your PC", press "More info", then "Run anyway". It says this because the
+  file is new to Windows, not because anything is wrong. Only do this if you trust where you got the zip.
+
+
+3. Make your first audiobook
+----------------------------
+- Open "Get ready" at the top of the page. It tells you what is missing. For the FREE voice, press
+  "Install it for me" (needs internet, about 100 MB, once), then download one voice from the voice list.
+- Drop your book on the page, tick the chapters you want, choose a voice (press "Sample" to hear it on your
+  own book), and press "Convert to audiobook".
+- When it says your audiobook is ready, press "Show in folder". It is saved in your Music folder, in a folder
+  called book2audio.
+
+
+If something does not work
+--------------------------
+- The black window closes at once: the folder is probably still inside the zip. Extract it first (step 1).
+- The free voice says a file such as VCRUNTIME or MSVCP140 is missing: install Microsoft's free "Visual C++
+  Redistributable" (search for it on microsoft.com), then try again.
+- Anything else: the black window shows what the program is doing. Keep it open and send its text to whoever
+  gave you this folder.
+
+
+Paid voices (ElevenLabs, Google) and the Claude clean-up
+--------------------------------------------------------
+These send the text of your book over the internet to that company, and the company charges you. The page
+always says so before anything is spent. Their keys (like a password for your account) are pasted into the
+page, kept only while the program runs, and never saved to a file.
+
+
+Stopping
+--------
+Press "Close Book2Audio" on the page, or close the black window. Anything already made is kept: next time,
+drop the same book again and press Convert to carry on where it stopped.
+
+
+Removing it
+-----------
+Delete this folder. Your settings, voices and unfinished work are in  %LOCALAPPDATA%\book2audio  (paste that
+into the address bar of a File Explorer window); delete that folder too if you want everything gone. Finished
+audiobooks in Music\book2audio are yours and stay.
+
+
+Licences
+--------
+This bundle contains Python, ffmpeg and other open-source programs. Their licences and where to get their
+source code are in the "licenses" folder.

@@ -45,6 +45,8 @@ No terminal needed after the install. Start it with a double-click:
 - **macOS:** double-click `Start Book2Audio.command`. The first time, right-click it and choose Open (macOS warns about files from the internet). If it says it cannot be opened, run `chmod +x "Start Book2Audio.command"` once in Terminal.
 - **Anywhere:** `book2audio ui` (add `--no-browser` to only print the link).
 
+**No Python or ffmpeg on the computer?** On Windows there is a portable bundle: one zip with its own Python and ffmpeg (an LGPL build), unzip and double-click, no installation. See [packaging/README.md](packaging/README.md) for how to build it and what it does and does not contain (Piper is not in it; the page installs it on request).
+
 A black window opens and your browser shows the Book2Audio page. Keep the black window open while you use it; "Close Book2Audio" on the page, or closing the window, stops it. Then:
 
 1. Drop an `.epub` or `.pdf`. You see the title, author, cover and chapters; front and back matter is unticked with the reason.

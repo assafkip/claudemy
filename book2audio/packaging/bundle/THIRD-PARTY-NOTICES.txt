@@ -1,0 +1,35 @@
+THIRD-PARTY NOTICES
+===================
+
+This folder is a portable copy of Book2Audio together with the programs it needs. Each keeps its own licence.
+
+Book2Audio
+  MIT licence (book2audio-LICENSE.txt). Its audio ideas started from Claudemy by Assaf Kipnis, also MIT; that
+  copyright notice is kept in the same file. Source: https://github.com/gcazzola/chillbook (folder book2audio).
+
+Python 3.13 (python\)
+  Python Software Foundation licence (Python-LICENSE.txt). The "embeddable package" from
+  https://www.python.org/downloads/windows/ , unchanged except that its python313._pth file was edited so it can
+  see the packages in Lib\site-packages.
+
+Python packages (python\Lib\site-packages\)
+  PACKAGES.txt lists each package with its version and licence. Each package's full licence text is in its
+  <name>.dist-info folder. They are the unmodified wheels from https://pypi.org .
+
+FFmpeg (ffmpeg\)
+  GNU Lesser General Public Licence, version 2.1 or later (FFmpeg-LICENSE.txt). This is the "LGPL, shared" build
+  of FFmpeg from https://github.com/BtbN/FFmpeg-Builds , built WITHOUT any GPL or non-free component. Exact build
+  and its checksum: BUILD-INFO.txt. Source code for the build: FFmpeg's git history at https://git.ffmpeg.org/ffmpeg.git
+  (the commit named in BUILD-INFO.txt, e.g. g7adfbe40dc) and the build scripts in the BtbN repository above. FFmpeg
+  is used as separate programs and shared libraries (the .dll files next to ffmpeg.exe), so you may replace them
+  with your own build of the same FFmpeg version.
+
+Not included
+  Piper (the free voice program, GPL-3.0-or-later) and any Piper voice model are NOT part of this bundle. The page
+  can install Piper for you on request; it then comes straight from https://pypi.org under Piper's own licence, and
+  each voice you download has its own licence (see its model card at https://huggingface.co/rhasspy/piper-voices ).
+  Book2Audio only starts Piper as a separate program.
+
+Cloud services
+  ElevenLabs, Google Cloud Text-to-Speech and Anthropic are separate services with their own terms. When you choose
+  one, the text of your book is sent to it (the page says so first), and it bills you directly.
