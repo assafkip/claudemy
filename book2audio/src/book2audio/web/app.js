@@ -149,7 +149,18 @@ function renderSetup() {
     h('span', {class: 'mark', 'aria-hidden': 'true'}, i.ok ? '✓' : i.required ? '!' : '–'),
     h('div', {},
       h('strong', {}, i.label), ' ', h('span', {class: 'muted'}, i.detail),
+      i.action === 'install-piper' ? installPiperButton() : null,
       i.fix ? fixBlock(i.fix) : null))));
+}
+
+function installPiperButton() {
+  return h('div', {}, h('button', {type: 'button', class: 'primary', disabled: !!S.installing, onclick: async () => {
+    S.installing = 'program'; S.installError = ''; renderSetup(); renderVoice();
+    try { await api('POST', '/api/piper/setup', {}); } catch (e) { S.installError = e.message; }
+    S.installing = null; await loadSetup(); loadVoices();
+  }}, S.installing === 'program' ? 'Installing… this takes a minute or two' : 'Install it for me'),
+    h('div', {class: 'help'}, 'Downloads the free voice program (about 100 MB, from the Python Package Index). Nothing from your book is sent.'),
+    S.installError ? h('div', {class: 'msg bad'}, S.installError) : null);
 }
 
 function fixBlock(text) {
@@ -236,6 +247,8 @@ function renderVoice() {
 function piperGet(cat) {
   const have = new Set(cat.voices.map((v) => v.id));
   const busy = S.installing;
+  const program = S.setup && S.setup.find((i) => i.id === 'piper' && i.action);
+  if (program) return h('div', {}, h('h3', {}, 'The free voice program is not installed yet'), installPiperButton());
   return h('div', {},
     h('h3', {}, cat.voices.length ? 'Get another free voice' : 'Get a free voice'),
     h('p', {class: 'help'}, 'Each voice is a download of roughly 60 MB from the Piper voice library. Nothing from your book is sent.'),

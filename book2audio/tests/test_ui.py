@@ -3,6 +3,7 @@ import http.client
 import json
 import os
 import shutil
+import sys
 import subprocess
 import tempfile
 import threading
@@ -490,6 +491,35 @@ class Helpers(Server):
             status, out = self.api("POST", "/api/piper/install", {"voice": "en_US-ryan-medium"})
         self.assertEqual(status, 400)
         self.assertIn("internet", out["error"])
+
+    def test_the_free_voice_program_installs_with_one_click(self):
+        state = {"installed": False, "ran": []}
+
+        def fake_run(cmd, **kw):
+            state["ran"].append(cmd)
+            state["installed"] = True
+            return mock.Mock(returncode=0, stdout="", stderr="")
+
+        with mock.patch.object(ui, "piper_installed", lambda: state["installed"]),                 mock.patch.object(ui, "pip_available", return_value=True), mock.patch.object(ui.subprocess, "run", fake_run):
+            item = next(i for i in self.api("GET", "/api/setup")[1]["items"] if i["id"] == "piper")
+            self.assertEqual((item["ok"], item["action"]), (False, "install-piper"))
+            self.assertEqual(self.api("POST", "/api/piper/setup", {"package": "evil"})[0], 200)
+            self.assertEqual(state["ran"], [[sys.executable, "-m", "pip", "install", "--disable-pip-version-check",
+                                             "piper-tts"]], "a fixed command: nothing from the page is passed on")
+            item = next(i for i in self.api("GET", "/api/setup")[1]["items"] if i["id"] == "piper")
+            self.assertIsNone(item["action"])
+
+    def test_a_failed_install_and_a_missing_pip_are_explained(self):
+        with mock.patch.object(ui, "piper_installed", lambda: False), mock.patch.object(ui, "pip_available", return_value=True),                 mock.patch.object(ui.subprocess, "run", return_value=mock.Mock(returncode=1, stdout="", stderr="no net")):
+            status, out = self.api("POST", "/api/piper/setup", {})
+        self.assertEqual(status, 400)
+        self.assertIn("internet", out["error"])
+        with mock.patch.object(ui, "piper_installed", lambda: False), mock.patch.object(ui, "pip_available", return_value=False):
+            status, out = self.api("POST", "/api/piper/setup", {})
+            item = next(i for i in self.api("GET", "/api/setup")[1]["items"] if i["id"] == "piper")
+        self.assertIn("copy-and-paste", out["error"])
+        self.assertIsNone(item["action"])
+        self.assertIn("pip install piper-tts", item["fix"], "the manual step is still there")
 
     @unittest.skipUnless(HAVE_FFMPEG, "ffmpeg/ffprobe not on PATH")
     def test_mac_voice_samples_are_converted_so_a_browser_can_play_them(self):

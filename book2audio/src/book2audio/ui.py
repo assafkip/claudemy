@@ -446,8 +446,9 @@ class App:
              "detail": ("Installed, with " + str(len(installed)) + " voice(s)." if have_piper and installed else
                         "The program is installed, but no voice is downloaded yet. Use the button in the voice list "
                         "to get one." if have_piper else "Not installed. Needed only for the free voice."),
-             "fix": None if have_piper else ("Paste this into Command Prompt (Windows) or Terminal (Mac), press Enter, "
-                                             "then start this program again:\n\n" + PIPER_FIX.format(py=sys.executable))},
+             "fix": None if have_piper else ("Or paste this into Command Prompt (Windows) or Terminal (Mac), press "
+                                             "Enter, then start this program again:\n\n" + PIPER_FIX.format(py=sys.executable)),
+             "action": "install-piper" if not have_piper and pip_available() else None},
         ]
         for p, extra in (("elevenlabs", ""), ("google", " Or sign in with Google's gcloud tool instead."),
                          ("anthropic", "")):
@@ -463,6 +464,18 @@ class App:
                           "fix": "Paste into Command Prompt or Terminal, press Enter, then start this program again:"
                                  f"\n\n\"{sys.executable}\" -m pip install anthropic"})
         return items
+
+    def install_piper(self) -> None:
+        """The button behind 'Install it for me': the one fixed package, from the Python Package Index."""
+        if not pip_available():
+            raise B2AError("This copy of Book2Audio cannot install add-ons by itself. Use the copy-and-paste step "
+                           "under 'Get ready' instead.")
+        r = subprocess.run([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "piper-tts"],
+                           capture_output=True, text=True, errors="replace", timeout=1800)
+        self._piper_ok = False
+        if r.returncode or not self.piper_ready():
+            raise B2AError("The free voice program could not be installed. Check your internet connection and try "
+                           f"again. ({self.scrub((r.stderr or r.stdout).strip()[-200:])})")
 
     def install_piper_voice(self, voice) -> None:
         if not (isinstance(voice, str) and voices.PIPER_NAME.match(voice)):
@@ -487,6 +500,13 @@ def playable(path: Path) -> Path:
         assemble.require_ffmpeg()
         assemble._run(["ffmpeg", "-nostdin", "-hide_banner", "-y", "-i", str(path), str(wav)])
     return wav
+
+
+def pip_available() -> bool:
+    try:
+        return subprocess.run([sys.executable, "-m", "pip", "--version"], capture_output=True, timeout=60).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
 
 
 def piper_installed() -> bool:
@@ -582,6 +602,7 @@ class Handler(BaseHTTPRequestHandler):
                      ("POST", "/api/convert"): lambda: {"run": self.app.start(self._json_body())},
                      ("POST", "/api/cancel"): lambda: self._cancel(),
                      ("POST", "/api/open-folder"): lambda: self._after(self.app.open_folder),
+                     ("POST", "/api/piper/setup"): lambda: self._after(self.app.install_piper),
                      ("POST", "/api/piper/install"): lambda: self._after(
                          lambda: self.app.install_piper_voice(self._json_body().get("voice"))),
                      ("POST", "/api/quit"): lambda: self._quit()}.get((method, url.path))
