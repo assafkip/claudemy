@@ -9,7 +9,7 @@ Key facts:
 - Research: 20 to 40 web pages per topic, at most 3 per site; every lesson citation is checked against pages actually read.
 - Optional: build a course from one named person's Substack or blog.
 - Audio: ElevenLabs voices with an API key, or free macOS voices without one.
-- Requires: Claude Code with web search, Python 3, beautifulsoup4, ffmpeg.
+- Requires: Claude Code with web search (on Amazon Bedrock, a search MCP server), Python 3, beautifulsoup4, ffmpeg.
 
 ## Docs
 - [Website](https://assafkip.github.io/claudemy/): what Claudemy is, install, needs, FAQ, comparison with Udemy and Coursera

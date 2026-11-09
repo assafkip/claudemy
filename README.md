@@ -58,7 +58,7 @@ Then ask for any topic: `teach me <topic>`.
 
 ## Needs
 
-- [Claude Code](https://claude.com/claude-code) with web search.
+- [Claude Code](https://claude.com/claude-code) with web search. Claude Code has no web search on Amazon Bedrock. There, add a search MCP server and Claudemy researches with it instead. One that needs no key or signup: `claude mcp add --transport http keenable https://api.keenable.ai/mcp-public`.
 - Python 3 with `beautifulsoup4` (`pip install beautifulsoup4`), and `ffmpeg`.
 - Audio: an ElevenLabs API key for natural two-voice lessons, either in `ELEVENLABS_API_KEY` or typed into the plugin's configuration prompt when you install it (stored in your OS keychain). Without one, macOS's built-in voices are used (free, plainer).
 - Optional: `pandoc` for a Word copy of the cards.
@@ -66,7 +66,7 @@ Then ask for any topic: `teach me <topic>`.
 Voices can be changed with `CLAUDEMY_VOICE_A` / `CLAUDEMY_VOICE_B` (ElevenLabs voice ids) or `CLAUDEMY_SAY_A` / `CLAUDEMY_SAY_B` (macOS voices).
 
 ## Data
-Claudemy runs on your machine inside Claude Code. It fetches the public web pages it researches and saves them in a local workspace folder. If you set an ElevenLabs API key, the text of each lesson is sent to ElevenLabs to render the audio. Without a key, audio is rendered locally with macOS voices. The skill has no server, collects no analytics, and stores nothing outside your machine. Details: [privacy page](https://assafkip.github.io/claudemy/privacy.html).
+Claudemy runs on your machine inside Claude Code. It fetches the public web pages it researches and saves them in a local workspace folder. If you add a search MCP server, your search queries go to that service. If you set an ElevenLabs API key, the text of each lesson is sent to ElevenLabs to render the audio. Without a key, audio is rendered locally with macOS voices. The skill has no server, collects no analytics, and stores nothing outside your machine. Details: [privacy page](https://assafkip.github.io/claudemy/privacy.html).
 
 ## FAQ
 
