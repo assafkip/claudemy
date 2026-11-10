@@ -693,5 +693,24 @@ class StampCardLines(unittest.TestCase):
         self.assertEqual(text, "**Listen:** x.mp3 (4:33)\n\n**Impact:** y\n")
 
 
+class StampCardLocale(unittest.TestCase):
+    """stamp_card rewrites a UTF-8 card, so like combine_cards it must not use the locale encoding."""
+
+    def test_non_utf8_locale(self):
+        with tempfile.TemporaryDirectory() as td:
+            card = Path(td) / "card.md"
+            card.write_text("**Listen:** x.mp3 (2 min)\n\nИван café\n", encoding="utf-8")
+            code = ("import subprocess, sys; from pathlib import Path; from unittest import mock; sys.path.insert(0, sys.argv[1]); "
+                    "import render_audio; done = subprocess.CompletedProcess([], 0, stdout='273.12\\n', stderr=''); "
+                    "mock.patch.object(render_audio.subprocess, 'run', return_value=done).start(); "
+                    "render_audio.stamp_card(Path(sys.argv[2]), Path(sys.argv[2]).with_name('x.mp3'))")
+            env = dict(os.environ, LC_ALL="ru_RU.CP1251", PYTHONUTF8="0")
+            r = subprocess.run([sys.executable, "-c", code, str(SCRIPTS), str(card)], env=env,
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            text = card.read_text(encoding="utf-8")
+        self.assertEqual(text, "**Listen:** x.mp3 (4:33)\n\nИван café\n")
+
+
 if __name__ == "__main__":
     unittest.main()
