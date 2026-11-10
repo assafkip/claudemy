@@ -108,13 +108,14 @@ def main(script_path, out_path):
 
 def stamp_card(card, mp3):
     """Write the real running time onto the card's Listen line. A hand-typed
-    "(2 min)" sat on a 2:32 lesson in the first full test run."""
+    "(2 min)" sat on a 2:32 lesson in the first full test run. The match stays on
+    that one line: with \\s it ran through the newline and ate the blank line below."""
     secs = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
                                  str(mp3)], capture_output=True, text=True, check=True).stdout.strip())
     length = f"{int(secs // 60)}:{int(secs % 60):02d}"
     if card.exists():
         text = card.read_text()
-        card.write_text(re.sub(r"^(\*\*Listen:\*\*.*?)\s*\([^)]*\)\s*$", rf"\1 ({length})", text, count=1, flags=re.M))
+        card.write_text(re.sub(r"^(\*\*Listen:\*\*.*?)[ \t]*\([^)\n]*\)[ \t]*$", rf"\1 ({length})", text, count=1, flags=re.M))
     return length
 
 
