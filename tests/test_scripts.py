@@ -664,5 +664,34 @@ class SubstackSkipRecord(unittest.TestCase):
             self.assertIn("https://j.substack.com/p/teaser", scrape.urls_on_disk(ws / "raw" / "jane"))
 
 
+class StampCardLines(unittest.TestCase):
+    """stamp_card rewrites the time on the Listen line and touches nothing else.
+    Its pattern ended in \\s*$ under re.M, so the match ran on through the newline
+    and deleted the blank line under the Listen line on every render."""
+
+    def stamp(self, card_text):
+        with tempfile.TemporaryDirectory() as td:
+            card = Path(td) / "card.md"
+            card.write_text(card_text, encoding="utf-8")
+            done = subprocess.CompletedProcess([], 0, stdout="273.12\n", stderr="")
+            with mock.patch.object(render_audio.subprocess, "run", return_value=done):
+                length = render_audio.stamp_card(card, Path(td) / "x.mp3")
+            return length, card.read_text(encoding="utf-8")
+
+    def test_blank_line_after_listen_line_is_kept(self):
+        length, text = self.stamp("# Lesson 1. X\n\n**Listen:** x.mp3 (2 min)\n\n**The idea, in three lines**\n")
+        self.assertEqual(length, "4:33")
+        self.assertEqual(text, "# Lesson 1. X\n\n**Listen:** x.mp3 (4:33)\n\n**The idea, in three lines**\n")
+
+    def test_parenthesised_next_line_is_not_eaten(self):
+        # A Listen line with no time yet must not reach down and match the next line's parentheses.
+        text = self.stamp("**Listen:** x.mp3\n(Recorded with two voices.)\n")[1]
+        self.assertEqual(text, "**Listen:** x.mp3\n(Recorded with two voices.)\n")
+
+    def test_restamp_replaces_the_old_time(self):
+        text = self.stamp("**Listen:** x.mp3 (2:10)\n\n**Impact:** y\n")[1]
+        self.assertEqual(text, "**Listen:** x.mp3 (4:33)\n\n**Impact:** y\n")
+
+
 if __name__ == "__main__":
     unittest.main()
