@@ -664,5 +664,53 @@ class SubstackSkipRecord(unittest.TestCase):
             self.assertIn("https://j.substack.com/p/teaser", scrape.urls_on_disk(ws / "raw" / "jane"))
 
 
+class StampCardLines(unittest.TestCase):
+    """stamp_card rewrites the time on the Listen line and touches nothing else.
+    Its pattern ended in \\s*$ under re.M, so the match ran on through the newline
+    and deleted the blank line under the Listen line on every render."""
+
+    def stamp(self, card_text):
+        with tempfile.TemporaryDirectory() as td:
+            card = Path(td) / "card.md"
+            card.write_text(card_text, encoding="utf-8")
+            done = subprocess.CompletedProcess([], 0, stdout="273.12\n", stderr="")
+            with mock.patch.object(render_audio.subprocess, "run", return_value=done):
+                length = render_audio.stamp_card(card, Path(td) / "x.mp3")
+            return length, card.read_text(encoding="utf-8")
+
+    def test_blank_line_after_listen_line_is_kept(self):
+        length, text = self.stamp("# Lesson 1. X\n\n**Listen:** x.mp3 (2 min)\n\n**The idea, in three lines**\n")
+        self.assertEqual(length, "4:33")
+        self.assertEqual(text, "# Lesson 1. X\n\n**Listen:** x.mp3 (4:33)\n\n**The idea, in three lines**\n")
+
+    def test_parenthesised_next_line_is_not_eaten(self):
+        # A Listen line with no time yet must not reach down and match the next line's parentheses.
+        text = self.stamp("**Listen:** x.mp3\n(Recorded with two voices.)\n")[1]
+        self.assertEqual(text, "**Listen:** x.mp3\n(Recorded with two voices.)\n")
+
+    def test_restamp_replaces_the_old_time(self):
+        text = self.stamp("**Listen:** x.mp3 (2:10)\n\n**Impact:** y\n")[1]
+        self.assertEqual(text, "**Listen:** x.mp3 (4:33)\n\n**Impact:** y\n")
+
+
+class StampCardLocale(unittest.TestCase):
+    """stamp_card rewrites a UTF-8 card, so like combine_cards it must not use the locale encoding."""
+
+    def test_non_utf8_locale(self):
+        with tempfile.TemporaryDirectory() as td:
+            card = Path(td) / "card.md"
+            card.write_text("**Listen:** x.mp3 (2 min)\n\nИван café\n", encoding="utf-8")
+            code = ("import subprocess, sys; from pathlib import Path; from unittest import mock; sys.path.insert(0, sys.argv[1]); "
+                    "import render_audio; done = subprocess.CompletedProcess([], 0, stdout='273.12\\n', stderr=''); "
+                    "mock.patch.object(render_audio.subprocess, 'run', return_value=done).start(); "
+                    "render_audio.stamp_card(Path(sys.argv[2]), Path(sys.argv[2]).with_name('x.mp3'))")
+            env = dict(os.environ, LC_ALL="ru_RU.CP1251", PYTHONUTF8="0")
+            r = subprocess.run([sys.executable, "-c", code, str(SCRIPTS), str(card)], env=env,
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            text = card.read_text(encoding="utf-8")
+        self.assertEqual(text, "**Listen:** x.mp3 (4:33)\n\nИван café\n")
+
+
 if __name__ == "__main__":
     unittest.main()
