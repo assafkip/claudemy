@@ -28,10 +28,17 @@ In every mode, limit counts posts on disk for that person, so a re-run tops up
 to the limit rather than adding another batch. Every page not saved is named
 with the reason.
 
+Every url, and every redirect it takes, is checked before it is fetched: only
+http and https, never an address on this machine or a private network, and never
+a blocked domain. Blocked domains come from an optional "blocklist" list in
+sources.json and from one domain per line in the file CLAUDEMY_BLOCKLIST names
+(default ~/.config/claudemy/blocklist.txt, if it exists); "example.com" also
+blocks its subdomains, and # starts a comment.
+
 Usage: python3 scrape.py <workspace> [name-substring | web]
 Re-runs skip posts already on disk, so an interrupted run resumes.
 """
-import copy, hashlib, html, json, re, sys, time, urllib.error, urllib.request
+import copy, hashlib, html, ipaddress, json, os, re, socket, sys, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -48,8 +55,82 @@ class NotJson(ValueError):
     """An API url answered with something else, usually a bot check or login page."""
 
 
+class BlockedUrl(ValueError):
+    """A url the scraper refuses to fetch: not http(s), a local or private address, or a blocked domain."""
+
+
+BLOCKED_DOMAINS = set()  # filled by main() from sources.json and the blocklist file
+DEFAULT_BLOCKLIST = Path("~/.config/claudemy/blocklist.txt")
+
+
+def parse_blocklist(text):
+    """One domain per line; # starts a comment; a scheme, www. or path is dropped."""
+    domains = set()
+    for line in text.splitlines():
+        entry = line.split("#", 1)[0].strip().lower()
+        if not entry:
+            continue
+        host = urllib.parse.urlsplit(entry if "//" in entry else "//" + entry).hostname or ""
+        if host:
+            domains.add(host.removeprefix("www."))
+    return domains
+
+
+def load_blocklist(cfg):
+    """Domains from sources.json "blocklist" plus the user's blocklist file."""
+    domains = parse_blocklist("\n".join(cfg.get("blocklist", [])))
+    path = Path(os.environ.get("CLAUDEMY_BLOCKLIST") or DEFAULT_BLOCKLIST).expanduser()
+    if path.is_file():
+        domains |= parse_blocklist(path.read_text(encoding="utf-8", errors="replace"))
+    elif os.environ.get("CLAUDEMY_BLOCKLIST"):
+        sys.exit(f"CLAUDEMY_BLOCKLIST names {path}, which is not a file")
+    return domains
+
+
+def blocked_domain(host):
+    return next((d for d in BLOCKED_DOMAINS if host == d or host.endswith("." + d)), None)
+
+
+def is_public(ip):
+    ip = ipaddress.ip_address(ip.split("%", 1)[0])
+    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
+        ip = ip.ipv4_mapped
+    return ip.is_global and not ip.is_multicast
+
+
+def check_url(url):
+    """Raise BlockedUrl unless url is http(s) on a public address and not a blocked domain.
+    A host that does not resolve is left for urlopen to report as unreachable."""
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme not in ("http", "https"):
+        raise BlockedUrl(f"blocked: only http and https are fetched, not {parts.scheme or 'no scheme'}")
+    host = (parts.hostname or "").rstrip(".").lower()
+    if not host:
+        raise BlockedUrl("blocked: no host in the url")
+    if (d := blocked_domain(host)):
+        raise BlockedUrl(f"blocked: {d} is on the blocklist")
+    try:
+        addrs = {a[4][0] for a in socket.getaddrinfo(host, parts.port or None, proto=socket.IPPROTO_TCP)}
+    except (socket.gaierror, UnicodeError):
+        return
+    private = sorted(a for a in addrs if not is_public(a))
+    if private:
+        raise BlockedUrl(f"blocked: {host} is a local or private address ({', '.join(private)})")
+
+
+class CheckedRedirects(urllib.request.HTTPRedirectHandler):
+    # A public page can redirect to localhost or a cloud metadata address; check every hop.
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        check_url(newurl)  # urllib has already joined a relative Location onto req's url
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+OPENER = urllib.request.build_opener(CheckedRedirects)
+
+
 def fetch_bytes(url):
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
+    check_url(url)
+    with OPENER.open(urllib.request.Request(url, headers=UA), timeout=30) as r:
         return r.read()
 
 
@@ -270,6 +351,8 @@ def save_page(out, person, url, fallback_date, min_words, reasons=None):
         return False
     try:
         raw = fetch(url)
+    except BlockedUrl as e:
+        return skip(str(e))
     except urllib.error.HTTPError as e:
         # A 404 here usually means a search tool invented the url; say so, don't call it thin.
         return skip(f"HTTP {e.code}, the url is wrong or the site refuses scripts")
@@ -404,6 +487,8 @@ def scrape_pages(ws, urls, min_words=150):
 
 def main(ws, want=""):
     cfg = json.loads((ws / "sources.json").read_text())
+    BLOCKED_DOMAINS.clear()
+    BLOCKED_DOMAINS.update(load_blocklist(cfg))
     if cfg.get("pages") and want in ("", "web"):
         scrape_pages(ws, cfg["pages"], cfg.get("min_words", 150))
     for person in cfg.get("authors", []):
@@ -418,6 +503,7 @@ def main(ws, want=""):
             elif site.get("kind") == "rss":
                 scrape_rss(ws, person, site)
         except (*NETWORK_ERRORS, ET.ParseError, NotJson, ValueError) as e:
+            # ValueError includes BlockedUrl: a blocked feed or sitemap stops that author only.
             # One unreachable author must not stop the others; the report names it.
             # ValueError also covers a feed whose declared encoding the XML parser
             # rejects outright (Shift_JIS, EUC-KR, GB2312...), issue #6: that used

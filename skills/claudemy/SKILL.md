@@ -52,7 +52,7 @@ Skip content farms, listicles with no substance, pages behind a login, and anyth
 ```
 Only list urls you saw in real search results or on a page you opened. Search models invent plausible urls: in the first full test, 12 of 34 suggested urls were dead.
 
-Then fetch them: `python3 <skill>/scripts/scrape.py <workspace> web`. It names every page it didn't save and why: an HTTP error (usually a wrong url), a paywalled teaser, or a thin or JavaScript-only page. While fewer than 20 pages are saved, or any sub-topic you plan to teach has fewer than 2 pages, search again for replacements and re-run; it skips what's on disk.
+Then fetch them: `python3 <skill>/scripts/scrape.py <workspace> web`. It names every page it didn't save and why: an HTTP error (usually a wrong url), a paywalled teaser, a thin or JavaScript-only page, or a blocked url (a local or private address, or a domain on the user's blocklist). Never try to fetch a blocked url another way; replace it with a different source. While fewer than 20 pages are saved, or any sub-topic you plan to teach has fewer than 2 pages, search again for replacements and re-run; it skips what's on disk.
 
 Show the user a short line on what's being read (how many pages, the main kinds of source). Don't wait for approval.
 
