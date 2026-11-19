@@ -664,5 +664,130 @@ class SubstackSkipRecord(unittest.TestCase):
             self.assertIn("https://j.substack.com/p/teaser", scrape.urls_on_disk(ws / "raw" / "jane"))
 
 
+def resolves_to(*ips):
+    """Patch DNS so every host resolves to the given addresses; no network is used."""
+    return mock.patch.object(scrape.socket, "getaddrinfo",
+                             return_value=[(2, 1, 6, "", (ip, 0)) for ip in ips])
+
+
+class FetchGuard(unittest.TestCase):
+    """Only http(s) on public addresses is fetched, redirects included, so a planted
+    url can't make the scraper read localhost, the LAN or a cloud metadata service."""
+
+    def blocked(self, url):
+        with self.assertRaises(scrape.BlockedUrl) as ctx:
+            scrape.check_url(url)
+        return str(ctx.exception)
+
+    def test_non_http_schemes_are_blocked(self):
+        for url in ("file:///etc/passwd", "ftp://example.com/x", "data:text/html,hi", "example.com/no-scheme"):
+            with self.subTest(url=url):
+                self.assertIn("only http and https", self.blocked(url))
+
+    def test_local_and_private_addresses_are_blocked(self):
+        for ip in ("127.0.0.1", "10.0.0.5", "172.16.3.4", "192.168.1.1", "169.254.169.254",
+                   "0.0.0.0", "::1", "fd00::1", "fe80::1", "::ffff:127.0.0.1", "100.64.0.1"):
+            with self.subTest(ip=ip), resolves_to(ip):
+                self.assertIn("local or private address", self.blocked("http://innocent.example.com/"))
+
+    def test_one_private_address_among_public_ones_is_blocked(self):
+        with resolves_to("93.184.215.14", "127.0.0.1"):
+            self.assertIn("127.0.0.1", self.blocked("https://example.com/"))
+
+    def test_public_address_passes(self):
+        with resolves_to("93.184.215.14", "2606:2800:21f:cb07:6820:80da:af6b:8b2c"):
+            scrape.check_url("https://example.com/guide")
+
+    def test_unresolvable_host_is_left_to_urlopen(self):
+        with mock.patch.object(scrape.socket, "getaddrinfo", side_effect=scrape.socket.gaierror("nope")):
+            scrape.check_url("https://no-such-host.invalid/")
+
+    def test_redirect_to_a_private_address_is_blocked(self):
+        handler = scrape.CheckedRedirects()
+        req = scrape.urllib.request.Request("https://example.com/start")
+        with resolves_to("169.254.169.254"), self.assertRaises(scrape.BlockedUrl):
+            handler.redirect_request(req, None, 302, "Found", {}, "http://metadata.internal/latest/")
+
+    def test_redirect_to_a_public_address_is_followed(self):
+        handler = scrape.CheckedRedirects()
+        req = scrape.urllib.request.Request("https://example.com/start")
+        with resolves_to("93.184.215.14"):
+            new = handler.redirect_request(req, None, 302, "Found", {}, "https://www.example.com/next")
+        self.assertEqual(new.full_url, "https://www.example.com/next")
+
+    def test_fetch_checks_before_opening(self):
+        with resolves_to("127.0.0.1"), mock.patch.object(scrape.OPENER, "open") as opened:
+            with self.assertRaises(scrape.BlockedUrl):
+                scrape.fetch("http://localhost:8080/admin")
+        opened.assert_not_called()
+
+    def test_web_mode_names_a_blocked_page_and_keeps_going(self):
+        with tempfile.TemporaryDirectory() as td:
+            stack, buf = quiet()
+            with stack, resolves_to("127.0.0.1"), mock.patch.object(scrape.time, "sleep"):
+                scrape.scrape_pages(Path(td), ["http://localhost/secret", "file:///etc/hosts"])
+        out = buf.getvalue()
+        self.assertIn("not saved, blocked: localhost is a local or private address", out)
+        self.assertIn("not saved, blocked: only http and https", out)
+
+
+class DomainBlocklist(unittest.TestCase):
+    """Domains the user blocks are never fetched, from sources.json or a blocklist file."""
+
+    def setUp(self):
+        self.addCleanup(scrape.BLOCKED_DOMAINS.clear)
+
+    def test_parse_drops_comments_scheme_www_and_path(self):
+        text = "# content farms\nexample.com\n  https://www.Spam.org/path  # trailing note\n\n"
+        self.assertEqual(scrape.parse_blocklist(text), {"example.com", "spam.org"})
+
+    def test_subdomains_are_blocked_but_lookalikes_are_not(self):
+        scrape.BLOCKED_DOMAINS.update({"example.com"})
+        with resolves_to("93.184.215.14"):
+            for url in ("https://example.com/a", "https://blog.example.com/a", "https://EXAMPLE.com./a"):
+                with self.subTest(url=url), self.assertRaises(scrape.BlockedUrl):
+                    scrape.check_url(url)
+            scrape.check_url("https://notexample.com/a")
+            scrape.check_url("https://example.com.evil.net/a")
+
+    def test_blocked_domain_is_refused_before_dns(self):
+        scrape.BLOCKED_DOMAINS.update({"spam.org"})
+        with mock.patch.object(scrape.socket, "getaddrinfo") as dns, self.assertRaises(scrape.BlockedUrl) as ctx:
+            scrape.check_url("https://spam.org/")
+        dns.assert_not_called()
+        self.assertIn("spam.org is on the blocklist", str(ctx.exception))
+
+    def test_load_merges_sources_json_and_the_file(self):
+        with tempfile.TemporaryDirectory() as td:
+            f = Path(td) / "blocklist.txt"
+            f.write_text("from-file.com\n", encoding="utf-8")
+            with mock.patch.dict(os.environ, {"CLAUDEMY_BLOCKLIST": str(f)}):
+                got = scrape.load_blocklist({"blocklist": ["from-json.com"]})
+        self.assertEqual(got, {"from-file.com", "from-json.com"})
+
+    def test_missing_default_file_is_fine_but_a_named_missing_file_is_an_error(self):
+        with tempfile.TemporaryDirectory() as td:
+            env = {k: v for k, v in os.environ.items() if k != "CLAUDEMY_BLOCKLIST"}
+            with mock.patch.dict(os.environ, env, clear=True), \
+                    mock.patch.object(scrape, "DEFAULT_BLOCKLIST", Path(td) / "absent.txt"):
+                self.assertEqual(scrape.load_blocklist({}), set())
+            with mock.patch.dict(os.environ, {"CLAUDEMY_BLOCKLIST": str(Path(td) / "absent.txt")}):
+                with self.assertRaises(SystemExit):
+                    scrape.load_blocklist({})
+
+    def test_main_skips_blocked_pages_with_a_reason(self):
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td)
+            (ws / "sources.json").write_text(json.dumps(
+                {"pages": ["https://spam.org/x"], "blocklist": ["spam.org"]}), encoding="utf-8")
+            env = {k: v for k, v in os.environ.items() if k != "CLAUDEMY_BLOCKLIST"}
+            stack, buf = quiet()
+            with stack, mock.patch.dict(os.environ, env, clear=True), \
+                    mock.patch.object(scrape, "DEFAULT_BLOCKLIST", ws / "absent.txt"), \
+                    mock.patch.object(scrape.time, "sleep"):
+                scrape.main(ws)
+        self.assertIn("not saved, blocked: spam.org is on the blocklist: https://spam.org/x", buf.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

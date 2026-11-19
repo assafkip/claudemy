@@ -63,6 +63,10 @@ Then ask for any topic: `teach me <topic>`.
 - Audio: an ElevenLabs API key for natural two-voice lessons, either in `ELEVENLABS_API_KEY` or typed into the plugin's configuration prompt when you install it (stored in your OS keychain). Without one, macOS's built-in voices are used (free, plainer).
 - Optional: `pandoc` for a Word copy of the cards.
 
+## Blocking sites
+
+The scraper fetches only `http` and `https` pages on public addresses, and checks every redirect too: a page can never send it to `localhost`, your home or office network, or a cloud metadata address. To keep particular sites out of your courses, list them one domain per line in `~/.config/claudemy/blocklist.txt` (or a file named by `CLAUDEMY_BLOCKLIST`), or under `"blocklist"` in a class's `sources.json`. A domain blocks its subdomains too, and `#` starts a comment. Blocked pages are named in the run's report, like any other page that was not saved.
+
 Voices can be changed with `CLAUDEMY_VOICE_A` / `CLAUDEMY_VOICE_B` (ElevenLabs voice ids) or `CLAUDEMY_SAY_A` / `CLAUDEMY_SAY_B` (macOS voices).
 
 ## Data
